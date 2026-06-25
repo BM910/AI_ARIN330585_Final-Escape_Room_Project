@@ -55,12 +55,14 @@ class State:
     
     
     def calculate_heuristic(self):
+        distance_goal, remain_keys = 0, 0
         for row in range(len(self.map)):
             for col in range(len(self.map[0])):
                 if self.map[row][col] == 'E':
-                    return abs(row - self.x) + abs(col - self.y) + len(self.keys) * 2
-        
-        return None
+                    distance_goal = abs(row - self.x) + abs(col - self.y)
+                if self.map[row][col].lower():
+                    remain_keys += 1
+        return distance_goal + remain_keys * 2
         
 
 class Node:
@@ -109,7 +111,7 @@ def get_result_path(node: Node):
 def simulated_annealing(initial_state):
     current_node = Node(initial_state, None, None, initial_state.calculate_heuristic())
 
-    T = 100      # Gán cố định
+    T = 90          # Gán cố định
     T_min = 0.01
     alpha = 0.99
 
