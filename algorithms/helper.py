@@ -84,6 +84,12 @@ def generate_new_state(state, move):
 
     return State(map, x, y, energy, keys)
 
+def find_start_position(map):
+    for row in range(len(map)):
+        for col in range(len(map[0])):
+            if map[row][col] == "S":
+                return (row, col)
+    return
 
 def get_result_path(node: Node):
     path = []
