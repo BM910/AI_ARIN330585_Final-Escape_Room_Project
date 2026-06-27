@@ -53,3 +53,31 @@ def greedy(start_map, energy=float("inf")):
                 frontier_set.add(next_state_tuple)
 
     return None
+
+# test
+def print_state(state : State):
+    for i, row in enumerate(state.map):
+        for j, tile in enumerate(row):
+            if i == state.x and j == state.y:
+                print("*", end=" ")
+            elif tile == "." or tile == "S":
+                print(" ", end=" ")
+            else:
+                print(tile, end=" ")
+        print()
+    print()
+
+if __name__ == "__main__":
+    test_map = [
+            ['#', '#', 'a', '#', '#'],
+            ['.',  3 , 'S', 'A', '#'],
+            ['#', '#', '.', '#', '#'],
+            ['E', '#', '.', '#', '#'],
+            ['.', '.', '.', '#', '#'],
+    ]
+
+    node_list = greedy(test_map, energy=6)
+    for node in node_list:
+        print_state(node.state)
+        print(f"action: {node.action}")
+        print("-"*20)

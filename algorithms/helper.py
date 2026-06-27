@@ -92,12 +92,13 @@ def find_start_position(map):
     return
 
 def get_result_path(node: Node):
-    path = []
+    node_list = []
 
     curr = node
     while curr.parent:
-        path.append(curr.action)
+        node_list.append(curr)
         curr = curr.parent
+    node_list.append(curr)
 
-    path.reverse()
-    return path
+    node_list.reverse()
+    return node_list
