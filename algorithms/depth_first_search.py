@@ -1,4 +1,4 @@
-from helper import Node, State, generate_new_state, get_result_path
+from helper import Node, State, generate_new_state, get_result_path, find_start_position
 
 
 def is_state_in_frontier(state: State, frontier_set):
@@ -8,12 +8,14 @@ def is_state_in_reached(state: State, reached):
     return state.get_tuple_representation() in reached
 
 
-def dfs_version_2(initial_state):
-    if not initial_state: #Nếu initial_state là None thì không làm gì hết
+def dfs_version_2(start_map, energy=float("inf")):
+    if not start_map:
         return None
     
-    # Khởi tạo Node
-    node = Node(initial_state, parent=None, action=None, cost=0)
+    x, y = find_start_position(start_map)
+    state = State(start_map, x, y, energy, set())
+    node = Node(state, parent=None, action=None, cost=0)
+
     if node.state.is_at_goal():
         return get_result_path(node)
 

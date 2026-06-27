@@ -1,5 +1,5 @@
 import random, math
-from helper import Node, State, generate_new_state, get_result_path
+from helper import Node, State, generate_new_state, get_result_path, find_start_position
 
     
 def calculate_heuristic(state: State):
@@ -13,10 +13,16 @@ def calculate_heuristic(state: State):
     return distance_goal + remain_keys * 2
         
 
-def simulated_annealing(initial_state):
-    current_node = Node(initial_state, None, None, calculate_heuristic(initial_state))
+def simulated_annealing(start_map, energy=float("inf")):
+    if not start_map:
+        return None
+    
+    x, y = find_start_position(start_map)
+    state = State(start_map, x, y, energy, set())
+    current_node = Node(state, parent=None, action=None, cost=calculate_heuristic(state))
 
-    T = 90          # Gán cố định
+    # Gán cố định
+    T = 90       
     T_min = 0.01
     alpha = 0.99
 

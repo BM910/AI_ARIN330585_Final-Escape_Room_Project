@@ -1,5 +1,4 @@
-import copy
-from helper import Node, State, generate_new_state, get_result_path
+from helper import Node, State, generate_new_state, get_result_path, find_start_position
 
     
 def calculate_heuristic(state: State):
@@ -20,15 +19,17 @@ def pop_min_cost_state(frontier):
     return lowest_cost_node
 
 
-def a_star(initial_state):
-    if not initial_state: #Nếu initial_state là None thì không làm gì hết
-        return None
+def a_star(start_map, energy=float("inf")):
+    if not start_map:
+        return
     
-    # Khởi tạo Node
-    heuristic_cost = initial_state.calculate_heuristic()
-    node = Node(initial_state, parent=None, action=None, cost={'g_n': 0, 'h_n': heuristic_cost, 'f_n': heuristic_cost})
+    x, y = find_start_position(start_map)
+    state = State(start_map, x, y, energy, set())
+    heuristic_cost = calculate_heuristic(state)
+    node = Node(state, parent=None, action=None, cost={'g_n': 0, 'h_n': heuristic_cost, 'f_n': heuristic_cost})
+    
 
-    frontier = {node.state.get_tuple_representation(): node}    # Cài đặt frontier dạng dict, key = state dạng tuple --> Tìm kiếm dễ dàng
+    frontier = {node.state.get_tuple_representation(): node}
 
     reached = dict()    # Lưu state dạng tuple và g(n)
     while frontier:
@@ -65,7 +66,7 @@ def a_star(initial_state):
             if not tuple_state in frontier and not tuple_state in reached:
 
                 child_node = Node(next_state, node, action, None)
-                heuristic_cost = next_state.calculate_heuristic()
+                heuristic_cost = calculate_heuristic(next_state)
                 child_node.cost = {'g_n': g_new, 'h_n': heuristic_cost, 'f_n': g_new + heuristic_cost}
 
                 frontier[tuple_state] = child_node
