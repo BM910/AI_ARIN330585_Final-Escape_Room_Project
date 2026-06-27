@@ -1,4 +1,5 @@
 import random
+import time
 
 def get_avaiable(board):
     result = set()
@@ -46,54 +47,75 @@ def total_conflict(board):
     return total
 
 def cell_with_max_conflict(list_conflict, board):
-    scored = [(cell_conflict(r, c, board), r, c) for r, c in list_conflict]  # chỉ 1 lần
-    max_conf = max(scored, key=lambda x: x[0])[0]
-    best_cells = [(r, c) for conf, r, c in scored if conf == max_conf]
-    return random.choice(best_cells)
+    scored = [(cell_conflict(r, c, board), r, c) for r, c in list_conflict]
+    scored.sort(key=lambda x: x[0], reverse=True)
+    top5 = scored[:5]
+    _, r, c = random.choice(top5)
+    return r, c
 
 
 def min_conflict(board, log=None):
     avaiable = get_avaiable(board)
-
-    for r in range(9):
-        for c in range(9):
-            if (r, c) not in avaiable:
-                board[r][c] = random.choice(range(1, 10))
-
     MAXSTEP = 100000
+    RESTART_AFTER = 500  # nếu sau 500 bước conflict không giảm thì restart
 
     if log is not None:
-        log.append("Min-Conflict bắt đầu...")
+        log.append("Min-Conflict bat dau...")
 
-    for step in range(MAXSTEP):
-        total = total_conflict(board)
-        if total == 0:
+    restart_count = 0
+
+    while True:
+        # khởi tạo ngẫu nhiên
+        for r in range(9):
+            for c in range(9):
+                if (r, c) not in avaiable:
+                    board[r][c] = random.choice(range(1, 10))
+
+        best_total = total_conflict(board)
+        no_improve = 0
+
+        for step in range(MAXSTEP):
+            total = total_conflict(board)
+
+            if total == 0:
+                if log is not None:
+                    log.append(f"✔ Giai xong! (restart={restart_count}, step={step})")
+                return board
+
+            # phát hiện kẹt
+            if total < best_total:
+                best_total = total
+                no_improve = 0
+            else:
+                no_improve += 1
+
+            if no_improve >= RESTART_AFTER:
+                restart_count += 1
+                if log is not None:
+                    log.append(f"! Restart #{restart_count} | cf={total}")
+                break  # thoát vòng for, restart lại while
+
+            list_conflict = list_cell_conflict(board, avaiable)
+            if not list_conflict:
+                break
+
+            r, c = cell_with_max_conflict(list_conflict, board)
+
+            best_conflict = float('inf')
+            best_vals = []
+            for i in range(1, 10):
+                board[r][c] = i
+                curr = cell_conflict(r, c, board)
+                if curr < best_conflict:
+                    best_conflict = curr
+                    best_vals = [i]
+                elif curr == best_conflict:
+                    best_vals.append(i)
+
+            chosen = random.choice(best_vals)
+            board[r][c] = chosen
+
             if log is not None:
-                log.append(f"✔ Giải xong! ({step} buoc)")
-            return board
-
-        list_conflict = list_cell_conflict(board, avaiable)
-        if not list_conflict:
-            break
-
-        r, c = cell_with_max_conflict(list_conflict, board)
-
-        best_conflict = float('inf')
-        best_vals = []
-        for i in range(1, 10):
-            board[r][c] = i
-            curr = cell_conflict(r, c, board)
-            if curr < best_conflict:
-                best_conflict = curr
-                best_vals = [i]
-            elif curr == best_conflict:
-                best_vals.append(i)
-
-        board[r][c] = random.choice(best_vals)
-
-        if log is not None and step % 500 == 0:
-            log.append(f"Step {step}: cf={total}")
-
-    if log is not None:
-        log.append("! Khong tim duoc loi giai")
-    return None
+                if step % 100 == 0:
+                    log.append(f"Step {step:5d} | o({r},{c}) = {chosen} | cf={total}")
+                time.sleep(0.05)
