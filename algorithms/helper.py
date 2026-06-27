@@ -16,6 +16,15 @@ class State:
 
         move_directions = {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
 
+        # Đang đứng trên '+' → loạn điều khiển, chỉ check tường
+        if self.map[self.x][self.y] == '+':
+            for move in move_directions:
+                dx, dy = move_directions[move]
+                nx, ny = self.x + dx, self.y + dy
+                if 0 <= nx < len(self.map) and 0 <= ny < len(self.map[0]) and self.map[nx][ny] != '#':
+                    moves.append(move)
+            return moves  
+
         # Check nước đi hợp lệ và không gặp tường
         for move in move_directions:
             dx, dy = move_directions[move]
