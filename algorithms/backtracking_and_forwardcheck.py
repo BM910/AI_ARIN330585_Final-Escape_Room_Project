@@ -1,5 +1,6 @@
+from collections import deque
+
 def get_csp(matrix):
-    """Trích xuất biến và miền giá trị ban đầu từ ma trận Sudoku."""
     vars = []
     val_in_rows   = [set() for _ in range(9)]
     val_in_cols   = [set() for _ in range(9)]
@@ -35,13 +36,7 @@ def is_neighbor(var1, var2):
     return False
 
 
-def forward_check(var, value, vars, domain, assignment):
-    """
-    Sau khi gán value cho var, loại value khỏi miền của mọi biến
-    chưa gán mà là hàng xóm của var.
-    Trả về dict {biến: [giá trị đã xóa]} để có thể hoàn tác,
-    hoặc None nếu có biến nào bị miền rỗng.
-    """
+def forward_check(var, value, vars, domain, assignment, log=None):
     pruned = {}
     for neighbor in vars:
         if neighbor in assignment or not is_neighbor(var, neighbor):
@@ -49,79 +44,85 @@ def forward_check(var, value, vars, domain, assignment):
         if value in domain[neighbor]:
             domain[neighbor].remove(value)
             pruned.setdefault(neighbor, []).append(value)
+            if log is not None:
+                nr, nc = neighbor
+                log.append(f"  FC ({nr},{nc}) loai {value}: con {sorted(domain[neighbor])}")
             if not domain[neighbor]:
-                return None   # miền rỗng → nhánh này thất bại
+                if log is not None:
+                    log.append(f"  ! ({nr},{nc}) mien rong")
+                return None
     return pruned
 
 
 def restore(pruned, domain):
-    """Hoàn tác các giá trị đã bị xóa bởi forward checking."""
     for var, values in pruned.items():
         domain[var].extend(values)
 
 
-def backtrack(vars, domain, assignment):
+def backtrack(vars, domain, assignment, step_count, matrix, log=None):
     if len(assignment) == len(vars):
         return assignment
 
-    # MRV: chọn biến chưa gán có miền nhỏ nhất
     unassigned = [v for v in vars if v not in assignment]
     var = min(unassigned, key=lambda v: len(domain[v]))
+    r, c = var
+
+    if log is not None:
+        log.append(f">> ({r},{c}) mien={sorted(domain[var])}")
 
     for value in list(domain[var]):
         assignment[var] = value
+        step_count[0] += 1
+        matrix[r][c] = value
 
-        # Forward checking: loại value khỏi hàng xóm
-        pruned = forward_check(var, value, vars, domain, assignment)
+        if log is not None:
+            log.append(f"  dat ({r},{c})={value} [b{step_count[0]}]")
+
+        import time
+        time.sleep(0.01)
+
+        pruned = forward_check(var, value, vars, domain, assignment, log)
 
         if pruned is not None:
-            result = backtrack(vars, domain, assignment)
+            result = backtrack(vars, domain, assignment, step_count, matrix, log)
             if result is not None:
                 return result
 
-        # Backtrack: hoàn tác gán và pruning
+        if log is not None:
+            log.append(f"  lui ({r},{c})={value}")
+
         restore(pruned or {}, domain)
+        matrix[r][c] = 0
         del assignment[var]
 
     return None
 
 
-def backtracking_forwardcheck_search(matrix):
+def backtracking_forwardcheck_search(matrix, log=None):
+    if log is not None:
+        log.append("ForwardCheck bat dau...")
+
     vars, domain = get_csp(matrix)
 
-    result = backtrack(vars, domain, {})
+    if log is not None:
+        log.append(f"FC: {len(vars)} o trong")
+        for var in vars:
+            if len(domain[var]) > 1:
+                r, c = var
+                log.append(f"  ({r},{c}): {sorted(domain[var])}")
+
+    step_count = [0]
+    result = backtrack(vars, domain, {}, step_count, matrix, log)
+
     if result is None:
+        if log is not None:
+            log.append("! Khong tim duoc loi giai")
         return None
+
+    if log is not None:
+        log.append(f"Giai xong! ({step_count[0]} buoc)")
 
     for (x, y), val in result.items():
         matrix[x][y] = val
 
     return matrix
-
-
-# --- Test ---
-if __name__ == "__main__":
-    import copy
-
-    sudoku = [
-        [5, 3, 0,  0, 7, 0,  0, 0, 0],
-        [6, 0, 0,  1, 9, 5,  0, 0, 0],
-        [0, 9, 8,  0, 0, 0,  0, 6, 0],
-
-        [8, 0, 0,  0, 6, 0,  0, 0, 3],
-        [4, 0, 0,  8, 0, 3,  0, 0, 1],
-        [7, 0, 0,  0, 2, 0,  0, 0, 6],
-
-        [0, 6, 0,  0, 0, 0,  2, 8, 0],
-        [0, 0, 0,  4, 1, 9,  0, 0, 5],
-        [0, 0, 0,  0, 8, 0,  0, 7, 9],
-    ]
-
-    solution = backtracking_forwardcheck_search(copy.deepcopy(sudoku))
-
-    if solution:
-        print("Giải thành công!")
-        for row in solution:
-            print(row)
-    else:
-        print("Không tìm được lời giải.")

@@ -5,7 +5,7 @@ def get_avaiable(board):
     for r in range(9):
         for c in range(9):
             if board[r][c] != 0:
-                result.append((r,c))
+                result.add((r,c))
     return result
 
 def cell_conflict(r, c, board):
@@ -46,33 +46,33 @@ def total_conflict(board):
     return total
 
 def cell_with_max_conflict(list_conflict, board):
-    max_conf = max(cell_conflict(r, c, board) for r, c in list_conflict)
-    
-    # Lấy tất cả ô cùng conflict cao nhất
-    best_cells = [(r, c) for r, c in list_conflict if cell_conflict(r, c, board) == max_conf]
-    
-    # Chọn ngẫu nhiên trong số đó để tránh bị kẹt
+    scored = [(cell_conflict(r, c, board), r, c) for r, c in list_conflict]  # chỉ 1 lần
+    max_conf = max(scored, key=lambda x: x[0])[0]
+    best_cells = [(r, c) for conf, r, c in scored if conf == max_conf]
     return random.choice(best_cells)
 
 
-def min_conflict(board):
+def min_conflict(board, log=None):
     avaiable = get_avaiable(board)
 
-    # Gán giá trị ngẫu nhiên cho các ô không cố định
     for r in range(9):
         for c in range(9):
             if (r, c) not in avaiable:
                 board[r][c] = random.choice(range(1, 10))
 
-    MAXSTEP = 1000000
+    MAXSTEP = 100000
+
+    if log is not None:
+        log.append("Min-Conflict bắt đầu...")
 
     for step in range(MAXSTEP):
-        if total_conflict(board) == 0:
-            print("Giải xong!")
+        total = total_conflict(board)
+        if total == 0:
+            if log is not None:
+                log.append(f"✔ Giải xong! ({step} buoc)")
             return board
 
         list_conflict = list_cell_conflict(board, avaiable)
-
         if not list_conflict:
             break
 
@@ -80,7 +80,6 @@ def min_conflict(board):
 
         best_conflict = float('inf')
         best_vals = []
-
         for i in range(1, 10):
             board[r][c] = i
             curr = cell_conflict(r, c, board)
@@ -92,5 +91,9 @@ def min_conflict(board):
 
         board[r][c] = random.choice(best_vals)
 
-    print("Không tìm được lời giải!")
+        if log is not None and step % 500 == 0:
+            log.append(f"Step {step}: cf={total}")
+
+    if log is not None:
+        log.append("! Khong tim duoc loi giai")
     return None

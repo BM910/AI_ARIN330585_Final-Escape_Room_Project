@@ -55,7 +55,7 @@ def rm_inconsistent_values(var1, var2, domain):
     return removed
 
 
-def ac_3(matrix):
+def ac_3(matrix, log=None):
     vars, domain = get_csp(matrix)
     arcs_queue = deque()
 
@@ -64,26 +64,48 @@ def ac_3(matrix):
             if is_neighbor(var1, var2):
                 arcs_queue.append((var1, var2))
 
+    if log is not None:
+        log.append(f"AC3: {len(arcs_queue)} arcs")
+
+    pruned = 0
     while arcs_queue:
         var1, var2 = arcs_queue.popleft()
         is_rm = rm_inconsistent_values(var1, var2, domain)
         
         if is_rm == True:
+            pruned += 1
+            if log is not None:
+                r, c = var1
+                log.append(f"AC3 cat ({r},{c}): {sorted(domain[var1])}")
             for var_k in vars:
                 if is_neighbor(var1, var_k):
                     arcs_queue.append((var_k, var1))
         elif is_rm is None:
+            if log is not None:
+                log.append(f"! AC3: mien rong tai {var1}")
             return None
+
+    if log is not None:
+        log.append(f"AC3 xong: cat {pruned} gia tri")
+        # In miền sau AC3 cho các ô còn nhiều lựa chọn
+        for var in vars:
+            if len(domain[var]) > 1:
+                r, c = var
+                log.append(f"  ({r},{c}): {sorted(domain[var])}")
 
     return vars, domain
 
 
-def backtrack(vars, domain, assignment):
+def backtrack(vars, domain, assignment, step_count, matrix, log=None):
     if len(assignment) == len(vars):
         return assignment
     
     unassigned_vars = [v for v in vars if v not in assignment]
     var = min(unassigned_vars, key=lambda v: len(domain[v]))
+    r, c = var
+
+    if log is not None:
+        log.append(f">> ({r},{c}) thu {sorted(domain[var])}")
 
     for value in domain[var]:
         is_valid = True
@@ -94,25 +116,54 @@ def backtrack(vars, domain, assignment):
                 
         if is_valid:
             assignment[var] = value
-            result = backtrack(vars, domain, assignment)
+            step_count[0] += 1
+            matrix[r][c] = value
+
+            if log is not None:
+                log.append(f"  dat ({r},{c})={value} [b{step_count[0]}]")
+
+            import time
+            time.sleep(0.01)
+
+            result = backtrack(vars, domain, assignment, step_count, matrix, log)
             if result is not None:
                 return result
+
+            if log is not None:
+                log.append(f"  lui ({r},{c})={value}")
+
+            matrix[r][c] = 0
             del assignment[var]
             
     return None
 
 
-def backtracking_and_ac_3_search(matrix):
-    ac3_result = ac_3(matrix)
+def backtracking_and_ac_3_search(matrix, log=None):
+    if log is not None:
+        log.append("AC3 bat dau...")
+
+    ac3_result = ac_3(matrix, log)
     if ac3_result is None:
+        if log is not None:
+            log.append("! AC3 that bai")
         return None
         
     vars, domain = ac3_result
 
-    result = backtrack(vars, domain, {})
+    if log is not None:
+        log.append(f"Backtrack: {len(vars)} o trong")
+
+    step_count = [0]
+    result = backtrack(vars, domain, {}, step_count, matrix, log)
+
     if result is None:
+        if log is not None:
+            log.append("! Khong tim duoc loi giai")
         return None
-        
+
+    if log is not None:
+        log.append(f"Giai xong! ({step_count[0]} buoc)")
+
     for x, y in result:
         matrix[x][y] = result[(x, y)]
     
