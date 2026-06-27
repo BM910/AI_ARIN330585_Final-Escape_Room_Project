@@ -27,7 +27,7 @@ def manhattan(x, y, goal_x, goal_y):
     return abs(x - goal_x) + abs(y - goal_y)
 
 
-def lrta_star(actual_map):
+def partial_observation(actual_map):
     # --- Tìm vị trí S và E ---
     start_x, start_y = find_start_position(actual_map)
     goal_x = goal_y = None
@@ -98,40 +98,39 @@ def lrta_star(actual_map):
     return path
 
 
-# --- In bản đồ belief (hiển thị '?' cho vùng chưa khám phá) ---
-def print_state(state: State):
-    for i, row in enumerate(state.map):
-        for j, tile in enumerate(row):
-            if i == state.x and j == state.y:
-                print("*", end=" ")
-            elif tile in ('.', 'S'):
-                print(" ", end=" ")
-            else:
-                print(tile, end=" ")
-        print()
-    print()
-
-
+# test
 if __name__ == "__main__":
-    actual_map = [
-        ['#', '#', '#', '#', '#', '#', '#'],
-        ['#', 'S', '.', '#', '.', 'E', '#'],
-        ['#', '.', '#', '#', 'A', '#', '#'],
-        ['#', '.', '.', '.', '.', '.', '#'],
-        ['#', '#', '#', '.', '.', '.', '#'],
-        ['#', 'a', '.', '.', '.', '.', '#'],
-        ['#', '#', '#', '#', '#', '#', '#'],
+    def print_state(state : State):
+        for i, row in enumerate(state.map):
+            for j, tile in enumerate(row):
+                if i == state.x and j == state.y:
+                    print("*", end=" ")
+                elif tile == "." or tile == "S":
+                    print(" ", end=" ")
+                else:
+                    print(tile, end=" ")
+            print()
+        print()
+
+    test_map = [
+            ['S', '.', '.', '.', '.', '.', '.', ],
+            ['.', '#', '#', '#', '#', '#', '.', ],
+            ['.', '.', '#', '.', -5 , '.', '.', ],
+            ['.', -9 , 'A', 'E', '#', '#', '.', ],
+            ['.', '.', '#', '.', '#', '.', '.', ],
+            ['.', 'a', '#', '.', '.', '.', '#', ],
+            ['#', '#', '#', '#', '#', '#', '#', ],
     ]
 
-    print("=== LRTA* - Quan sát cục bộ 3x3 ===\n")
-    path = lrta_star(actual_map)
-
-    if path:
-        for node in path:
+    node_list = partial_observation(test_map)
+    action_list = []
+    if node_list:
+        for node in node_list:
+            action_list.append(node.action)
             print_state(node.state)
-            print(f"Hành động : {node.action}")
-            print(f"Chìa khóa : {node.state.keys}")
-            print("-" * 30)
-        print(f"\nThành công! Tổng số bước: {len(path) - 1}")
+            print(f"action: {node.action}  cost: {node.cost}  energy: {node.state.energy}")
+            print("-"*20)
+        for action in action_list:
+            print(action, end=" ")
     else:
-        print("Thất bại! Không tìm được đường đi.")
+        print(node_list)
