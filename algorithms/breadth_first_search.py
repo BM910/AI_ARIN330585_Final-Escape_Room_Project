@@ -6,7 +6,7 @@ def bfs(start_map, energy=float("inf")):
         return None
     
     x, y = find_start_position(start_map)
-    state = State(start_map, x, y, energy)
+    state = State(start_map, x, y, energy, set())
     node = Node(state, parent=None, action=None, cost=0)
 
     if state.is_at_goal():
