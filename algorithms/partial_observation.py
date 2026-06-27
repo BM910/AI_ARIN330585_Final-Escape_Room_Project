@@ -43,8 +43,8 @@ def lrta_star(actual_map):
     belief_map[start_x][start_y] = 'S'
     belief_map[goal_x][goal_y] = 'E'
 
-    # --- Bảng heuristic H (khởi tạo = Manhattan) ---
-    H = {(r, c): manhattan(r, c, goal_x, goal_y)
+    # --- Bảng heuristic heuristics (khởi tạo = Manhattan) ---
+    heuristics = {(r, c): manhattan(r, c, goal_x, goal_y)
          for r in range(rows) for c in range(cols)}
 
     # --- Khởi tạo node đầu ---
@@ -66,7 +66,7 @@ def lrta_star(actual_map):
             print("Agent bị kẹt, không còn nước đi!")
             return None
 
-        # Tính cost dự kiến cho từng nước đi: 1 + H(ô kế tiếp)
+        # Tính cost dự kiến cho từng nước đi: 1 + heuristics(ô kế tiếp)
         candidates = []
         for action in moves:
             next_state = generate_new_state(current_node.state, action)
@@ -74,14 +74,14 @@ def lrta_star(actual_map):
                 continue
             if isinstance(next_state, list):
                 next_state = next_state[0]
-            candidates.append((1 + H[(next_state.x, next_state.y)], action, next_state))
+            candidates.append((1 + heuristics[(next_state.x, next_state.y)], action, next_state))
 
         if not candidates:
             print("Không có nước đi hợp lệ!")
             return None
 
         # Cập nhật heuristic ô hiện tại (bước "học" của LRTA*)
-        H[(x, y)] = min(c[0] for c in candidates)
+        heuristics[(x, y)] = min(c[0] for c in candidates)
 
         # Chọn nước đi tốt nhất
         candidates.sort(key=lambda c: c[0])
