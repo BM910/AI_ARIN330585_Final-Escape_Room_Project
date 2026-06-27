@@ -31,6 +31,7 @@ class PlayScreen:
         self.failure = FailureScreen(level)
         self.is_failure = False
 
+        self.board_sudoku = board_sudoku
         self.sudoku = None
         self.is_sudoku = False
         if board_sudoku is not None:
@@ -167,8 +168,10 @@ class PlayScreen:
         self.is_success = False
         self.is_failure = False
         self.is_sudoku  = False
-        if self.sudoku is not None:
-            self.sudoku.reset()
+        if self.board_sudoku is not None:
+            self.sudoku = Sudoku(self.board_sudoku)
+        else:
+            self.sudoku = None
 
     def return_game(self):
         self.is_resume = False
