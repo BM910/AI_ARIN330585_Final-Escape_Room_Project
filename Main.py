@@ -1,22 +1,30 @@
 import pygame
-from Screen.start import StartScreen
-from Screen.menu_level import LevelScreen
-from Screen.play import PlayScreen
-from data.Node import Node
-
+import os
+import json
+from screen.start import StartScreen
+from screen.menu_level import LevelScreen
+from screen.play import PlayScreen
+from data.levels.Load_level import load_level
 
 pygame.init()
 
 WIDTH, HEIGHT = 1000, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(BASE_DIR, "data", "levels", "sudoku_board.json")) as f:
+    sudoku_board = json.load(f)
+
+SUDOKU_LEVEL = 1  # level nào có ô '@'
 
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()
 levels = [0,1,2,3,4,5,6]
-for i in range(6):
-    # Lấy node theo ...
-    # node = Node(state, None, None, 0)
-    levels[i+1] = PlayScreen(i)
+for i in range(1, 2):
+    lv, node = load_level(os.path.join(BASE_DIR, "data", "levels", f"level{i}.json"))
+    board = sudoku_board if i == SUDOKU_LEVEL else None
+    levels[i] = PlayScreen(lv, node, board_sudoku=board)
 level = 0
 
 # start
@@ -36,22 +44,27 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
 
             if current_screen == "start" :
-
                 if start_screen.start_button.collidepoint(event.pos):
                     current_screen = "menu level"
 
             elif current_screen == "menu level":
-
                 if menu_level_screen.back_button.collidepoint(event.pos):
                     current_screen = "start"
 
                 for i, button in enumerate(menu_level_screen.level_buttons):
                     if button.collidepoint(event.pos):
-                        level = i
+                        level = i + 1
                         current_screen = "play"
 
-            elif current_screen == "play":
-                result = levels[level].handle_event(event)
+        if current_screen == "play":
+            result = levels[level].handle_event(event)
+            if result == "start":          
+                current_screen = "start"
+            elif result == "menu level":
+                current_screen = "menu level"
+            elif result == "next_level":
+                level = min(level + 1, len(levels) - 1)
+                current_screen = "play"
 
     if current_screen == "start":
         start_screen.draw(screen)
