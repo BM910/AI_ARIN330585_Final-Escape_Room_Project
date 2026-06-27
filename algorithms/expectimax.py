@@ -109,7 +109,7 @@ def generate_next_states(board, turn):
 
 def expectimax(board):
     turn = get_next_turn(board)
-    max_depth = 7 
+    max_depth = 6
 
     if turn is None:
         return None

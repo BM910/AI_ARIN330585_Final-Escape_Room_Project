@@ -100,14 +100,6 @@ C_OVERLAY    = (0,   0,   0,   160)
 
 
 class ConnectFour:
-    """
-    Connect Four vẽ lên một surface/screen ngoài, không tạo cửa sổ riêng.
-    Interface giống Sudoku: draw(screen) + handle_event(event) → "solved" | None.
-
-    Tọa độ vẽ bắt đầu tại (offset_x, offset_y) được truyền vào lúc khởi tạo.
-    Mặc định căn giữa màn hình 1000×600.
-    """
-
     def __init__(self, screen_w=1000, screen_h=600, offset_x=None, offset_y=None):
         self.screen_w = screen_w
         self.screen_h = screen_h
@@ -406,7 +398,7 @@ class ConnectFour:
     def _check_end(self, last_player):
         if is_terminal(self.board, last_player):
             if last_player == 1:
-                self.status  = "Agent (Đỏ) THẮNG — thử thách thất bại!"
+                self.status  = "Agent (Đỏ) THẮNG — vượt thử thách THÀNH CÔNG!"
                 self._agent_won = True          # → handle_event sẽ trả "solved"
             else:
                 self.status  = "Enemy Bot (Xanh) thắng!"
@@ -445,7 +437,7 @@ class ConnectFour:
         if col is None: return
         move_num = sum(c != 0 for row in self.board for c in row) + 1
         self._add_log(f"#{move_num} Agent → cột {col+1}", C_P1)
-        self._add_log(f"  [{algo_name}] score={score} | {elapsed:.3f}s", C_AI_TIME)
+        self._add_log(f"  [{algo_name}] score={score:.2f} | {elapsed:.3f}s", C_AI_TIME)
         self._start_drop(col, 1)
 
     def _trigger_enemy(self):
