@@ -6,6 +6,8 @@ from screen.failure import FailureScreen
 from screen.sudoku import Sudoku
 from screen.connect_4 import ConnectFour          # ← thêm import
 
+from screen.level_1_agent_mode import AIReplayScreen
+
 ROWS, COLS = 6, 6
 CELL_SIZE = 80
 WIDTH, HEIGHT = 1000, 600
@@ -25,6 +27,8 @@ class PlayScreen:
         self.resume_screen = ResumeScreen()
         self.resume_button = pygame.Rect(WIDTH - 60, 10, 45, 45)
         self.is_resume = False
+
+        self.agent_button = pygame.Rect(WIDTH - 220, 10, 145, 45)
 
         self.success = SuccessScreen(level)
         self.is_success = False
@@ -169,6 +173,19 @@ class PlayScreen:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.resume_button.collidepoint(event.pos):
                 self.is_resume = True
+            
+            if self.resume_button.collidepoint(event.pos):
+                self.is_resume = True
+                return
+
+            if self.agent_button.collidepoint(event.pos):
+                # Map + energy của level hiện tại (level 1)
+                start_map = copy.deepcopy(self.start_node.state.map)
+                start_energy = self.start_node.state.energy
+
+                # Mở Agent Mode
+                AIReplayScreen(start_map, energy=start_energy).run()
+                return
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -248,6 +265,14 @@ class PlayScreen:
         bar_y = by + 8
         pygame.draw.rect(screen, (230, 230, 230), (bx + bw//2 - 9, bar_y, bar_w, bar_h), border_radius=3)
         pygame.draw.rect(screen, (230, 230, 230), (bx + bw//2 + 3, bar_y, bar_w, bar_h), border_radius=3)
+
+        # Nút Agent Mode
+        pygame.draw.rect(screen, (70, 110, 220), self.agent_button, border_radius=8)
+        pygame.draw.rect(screen, (230, 230, 255), self.agent_button, 2, border_radius=8)
+
+        font_agent = pygame.font.SysFont(None, 30)
+        agent_text = font_agent.render("Agent Mode", True, (255, 255, 255))
+        screen.blit(agent_text, agent_text.get_rect(center=self.agent_button.center))
 
         # Info bar
         font_info = pygame.font.SysFont(None, 28)
