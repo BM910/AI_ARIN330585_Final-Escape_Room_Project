@@ -1,4 +1,4 @@
-from helper import Node, State, generate_new_state, get_result_path
+from helper import Node, State, generate_new_state, get_result_path, find_start_position
 
 def calculate_heuristic(state: State):
     for row in range(len(state.map)):
@@ -16,12 +16,15 @@ def pop_min_cost_state(frontier):
 
     return lowest_cost_node
 
-def ida_star(initial_state):
-    if not initial_state:
+def ida_star(start_map, energy=float("inf")):
+    if not start_map:
         return None
     
-    heuristic_cost = calculate_heuristic(initial_state)
-    root = Node(initial_state, parent=None, action=None, cost={'g_n': 0, 'h_n': heuristic_cost, 'f_n': heuristic_cost})
+    x, y = find_start_position(start_map)
+    state = State(start_map, x, y, energy, set())
+
+    heuristic_cost = calculate_heuristic(state)
+    root = Node(state, parent=None, action=None, cost={'g_n': 0, 'h_n': heuristic_cost, 'f_n': heuristic_cost})
     threshold = heuristic_cost
 
     while threshold < 100000:
@@ -73,3 +76,40 @@ def ida_star(initial_state):
         threshold = min_threshold
 
     return None
+
+# test
+if __name__ == "__main__":
+    def print_state(state : State):
+        for i, row in enumerate(state.map):
+            for j, tile in enumerate(row):
+                if i == state.x and j == state.y:
+                    print("*", end=" ")
+                elif tile == "." or tile == "S":
+                    print(" ", end=" ")
+                else:
+                    print(tile, end=" ")
+            print()
+        print()
+
+    test_map = [
+            ['S', '.', '.', '.', '.', '.', '.', ],
+            ['.', '#', '#', '#', '#', '#', '.', ],
+            ['.', '.', '#', '.', -5 , '.', '.', ],
+            ['.', -9 , 'A', 'E', '#', '#', '.', ],
+            ['.', '.', '#', '.', '#', '.', '.', ],
+            ['.', 'a', '#', '.', '.', '.', '#', ],
+            ['#', '#', '#', '#', '#', '#', '#', ],
+    ]
+
+    node_list = ida_star(test_map, energy=30)
+    action_list = []
+    if node_list:
+        for node in node_list:
+            action_list.append(node.action)
+            print_state(node.state)
+            print(f"action: {node.action}  cost: {node.cost}  energy: {node.state.energy}")
+            print("-"*20)
+        for action in action_list:
+            print(action, end=" ")
+    else:
+        print(node_list)

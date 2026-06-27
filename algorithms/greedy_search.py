@@ -55,29 +55,38 @@ def greedy(start_map, energy=float("inf")):
     return None
 
 # test
-def print_state(state : State):
-    for i, row in enumerate(state.map):
-        for j, tile in enumerate(row):
-            if i == state.x and j == state.y:
-                print("*", end=" ")
-            elif tile == "." or tile == "S":
-                print(" ", end=" ")
-            else:
-                print(tile, end=" ")
-        print()
-    print()
-
 if __name__ == "__main__":
+    def print_state(state : State):
+        for i, row in enumerate(state.map):
+            for j, tile in enumerate(row):
+                if i == state.x and j == state.y:
+                    print("*", end=" ")
+                elif tile == "." or tile == "S":
+                    print(" ", end=" ")
+                else:
+                    print(tile, end=" ")
+            print()
+        print()
+
     test_map = [
-            ['#', '#', 'a', '#', '#'],
-            ['.',  3 , 'S', 'A', '#'],
-            ['#', '#', '.', '#', '#'],
-            ['E', '#', '.', '#', '#'],
-            ['.', '.', '.', '#', '#'],
+            ['S', '.', '.', '.', '.', '.', '.', ],
+            ['.', '#', '#', '#', '#', '#', '.', ],
+            ['.', '.', '#', '.', -5 , '.', '.', ],
+            ['.', -9 , 'A', 'E', '#', '#', '.', ],
+            ['.', '.', '#', '.', '#', '.', '.', ],
+            ['.', 'a', '#', '.', '.', '.', '#', ],
+            ['#', '#', '#', '#', '#', '#', '#', ],
     ]
 
-    node_list = greedy(test_map, energy=6)
-    for node in node_list:
-        print_state(node.state)
-        print(f"action: {node.action}")
-        print("-"*20)
+    node_list = greedy(test_map, energy=30)
+    action_list = []
+    if node_list:
+        for node in node_list:
+            action_list.append(node.action)
+            print_state(node.state)
+            print(f"action: {node.action}  cost: {node.cost}  energy: {node.state.energy}")
+            print("-"*20)
+        for action in action_list:
+            print(action, end=" ")
+    else:
+        print(node_list)
