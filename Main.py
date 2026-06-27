@@ -1,7 +1,7 @@
 import pygame
-from Screen.StartScreen import StartScreen
-from Screen.MenuLevelScreen import LevelScreen
-from Screen.PlayScreen import PlayScreen
+from Screen.start import StartScreen
+from Screen.menu_level import LevelScreen
+from Screen.play import PlayScreen
 from data.Node import Node
 
 

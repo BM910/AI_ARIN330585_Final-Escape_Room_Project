@@ -1,3 +1,3 @@
 import pygame 
-from StartScreen import StartScreen
-from Screen.MenuLevelScreen import LevelScreen
+from Screen.start import StartScreen
+from Screen.menu_level import LevelScreen

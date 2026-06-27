@@ -1,6 +1,6 @@
 import pygame 
 import copy
-from Screen.ResumeScreen import ResumeScreen
+from Screen.resume import ResumeScreen
 
 ROWS, COLS = 6, 6
 CELL_SIZE = 50
