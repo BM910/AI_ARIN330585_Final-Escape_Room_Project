@@ -1,9 +1,9 @@
 import pygame 
 import copy
 import threading
-from algorithm.backtracking_and_ac_3 import backtracking_and_ac_3_search
-from algorithm.min_conflict import min_conflict
-from algorithm.backtracking_and_forwardcheck import backtracking_forwardcheck_search
+from algorithms.backtracking_and_ac_3 import backtracking_and_ac_3_search
+from algorithms.min_conflict import min_conflict
+from algorithms.backtracking_and_forwardcheck import backtracking_forwardcheck_search
 from screen.resume import ResumeScreen
 
 # ── CONSTANTS ────────────────────────────────────────────────────
