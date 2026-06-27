@@ -69,15 +69,37 @@ def generate_new_state(state, move):
     map, x, y, energy, keys = copy.deepcopy(state.map), state.x, state.y, state.energy, copy.deepcopy(state.keys)
 
     move_directions = {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
-    x, y = x + move_directions[move][0], y + move_directions[move][1]
-    energy -= 1     # Mặc định phải trừ, dù đi vào ô năng lượng
+    next_x = x + move_directions[move][0]
+    next_y = y + move_directions[move][1]
 
-    # Gặp năng lượng --> Nhặt
+    # Đang đứng trên ô '+' → loạn điều khiển, trả về list
+    if map[x][y] == '+':
+        result_states = []
+        map[x][y] = '.'  # xóa '+' khi rời đi
+
+        for dx, dy in move_directions.values():
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(map) and 0 <= ny < len(map[0]) and map[nx][ny] != '#':
+                result_states.append(State(copy.deepcopy(map), nx, ny, energy - 1, copy.deepcopy(keys)))
+            else:
+                # Gặp tường → đứng yên tại '+'
+                result_states.append(State(copy.deepcopy(map), x, y, energy - 1, copy.deepcopy(keys)))
+
+        return result_states  # list
+
+    # Bước vào ô '+' → đứng yên tại đó, giữ '+' để bước sau loạn
+    if map[next_x][next_y] == '+':
+        x, y = next_x, next_y
+        energy -= 1
+        return State(map, x, y, energy, keys)  # 1 state bình thường
+
+    # Logic cũ giữ nguyên
+    x, y = next_x, next_y
+    energy -= 1
+
     if isinstance(map[x][y], int):
         energy += map[x][y]
         map[x][y] = '.'
-
-    # Nhặt khóa thì năng lượng vẫn -1
     elif isinstance(map[x][y], str) and map[x][y].islower():
         keys.add(map[x][y])
         map[x][y] = '.'
