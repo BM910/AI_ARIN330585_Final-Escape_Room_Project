@@ -1,5 +1,13 @@
 import random
 
+def get_avaiable(board):
+    result = set()
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] != 0:
+                result.append((r,c))
+    return result
+
 def cell_conflict(r, c, board):
     conflict = 0
     val = board[r][c]
@@ -47,7 +55,9 @@ def cell_with_max_conflict(list_conflict, board):
     return random.choice(best_cells)
 
 
-def min_conflict(board, avaiable):
+def min_conflict(board):
+    avaiable = get_avaiable(board)
+
     # Gán giá trị ngẫu nhiên cho các ô không cố định
     for r in range(9):
         for c in range(9):
