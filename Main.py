@@ -16,12 +16,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(BASE_DIR, "data", "levels", "sudoku_board.json")) as f:
     sudoku_board = json.load(f)
 
-SUDOKU_LEVEL = 1  # level nào có ô '@'
+SUDOKU_LEVEL = 3  # level nào có ô '@'
 
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()
 levels = [0,1,2,3,4,5,6]
-for i in range(1, 2):
+for i in range(1, 4):
     lv, node = load_level(os.path.join(BASE_DIR, "data", "levels", f"level{i}.json"))
     board = sudoku_board if i == SUDOKU_LEVEL else None
     levels[i] = PlayScreen(lv, node, board_sudoku=board)

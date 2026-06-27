@@ -5,21 +5,20 @@ from screen.success import SuccessScreen
 from screen.failure import FailureScreen
 from screen.sudoku import Sudoku
 
-ROWS, COLS = 6, 6
 CELL_SIZE = 80
 WIDTH, HEIGHT = 1000, 600
-
-# Tính offset để ma trận nằm giữa màn hình
-GRID_WIDTH = COLS * CELL_SIZE
-GRID_HEIGHT = ROWS * CELL_SIZE
-OFFSET_X = (WIDTH - GRID_WIDTH) // 2
-OFFSET_Y = (HEIGHT - GRID_HEIGHT) // 2
 
 class PlayScreen:
     def __init__(self, level, node, board_sudoku=None):
         self.level = level
         self.node = node
         self.start_node = copy.deepcopy(node)
+
+        # Đọc kích thước động từ map
+        self.rows = len(node.state.map)
+        self.cols = len(node.state.map[0])
+        self.offset_x = (WIDTH  - self.cols * CELL_SIZE) // 2
+        self.offset_y = (HEIGHT - self.rows * CELL_SIZE) // 2
 
         self.resume_screen = ResumeScreen()
         self.resume_button = pygame.Rect(WIDTH - 60, 10, 45, 45)
@@ -66,7 +65,7 @@ class PlayScreen:
         if next_move == '#':
             return 
         
-        if isinstance(next_move, str) and next_move.isupper() and next_move != 'E' and next_move.lower() not in keys:
+        if isinstance(next_move, str) and next_move.isupper() and next_move not in ['S', 'E'] and next_move.lower() not in keys:
             return
         
         self.node.state.energy -= 1
@@ -88,7 +87,7 @@ class PlayScreen:
             energy += map[x][y]
 
         if isinstance(map[x][y], str):
-            if map[x][y] not in ['S', 'E']:  # ← thêm điều kiện này
+            if map[x][y] not in ['S', 'E']:
                 if map[x][y].islower():
                     keys.add(map[x][y])
                 if map[x][y].isupper():
@@ -184,16 +183,15 @@ class PlayScreen:
         return "menu level"
 
     def draw(self, screen):
-        screen.fill((30, 30, 40))  # Nền tối nhẹ cho dễ nhìn
+        screen.fill((30, 30, 40))
 
         game_map = self.node.state.map
         font_cell = pygame.font.SysFont(None, 36)
 
-        for r in range(ROWS):
-            for c in range(COLS):
-                # Vị trí ô có offset để căn giữa
-                x = OFFSET_X + c * CELL_SIZE
-                y = OFFSET_Y + r * CELL_SIZE
+        for r in range(self.rows):
+            for c in range(self.cols):
+                x = self.offset_x + c * CELL_SIZE
+                y = self.offset_y + r * CELL_SIZE
 
                 value = game_map[r][c]
 
@@ -210,12 +208,9 @@ class PlayScreen:
                 else:
                     color = (160, 160, 160)
 
-                # Ô nền
                 pygame.draw.rect(screen, color, (x, y, CELL_SIZE, CELL_SIZE))
-                # Viền
                 pygame.draw.rect(screen, (0, 0, 0), (x, y, CELL_SIZE, CELL_SIZE), 1)
 
-                # Hiển thị nội dung ô
                 if value != '.':
                     text = font_cell.render(str(value), True, (0, 0, 0))
                     text_rect = text.get_rect(center=(x + CELL_SIZE // 2, y + CELL_SIZE // 2))
@@ -228,24 +223,22 @@ class PlayScreen:
             screen,
             (60, 120, 255),
             (
-                OFFSET_X + player_y * CELL_SIZE + CELL_SIZE // 2,
-                OFFSET_Y + player_x * CELL_SIZE + CELL_SIZE // 2
+                self.offset_x + player_y * CELL_SIZE + CELL_SIZE // 2,
+                self.offset_y + player_x * CELL_SIZE + CELL_SIZE // 2
             ),
             CELL_SIZE // 3
         )
 
-        # Nút Resume — góc phải trên, hình dấu = xoay 90° (║)
+        # Nút Resume
         pygame.draw.rect(screen, (60, 60, 80), self.resume_button, border_radius=8)
         bx, by = self.resume_button.x, self.resume_button.y
         bw, bh = self.resume_button.width, self.resume_button.height
         bar_w, bar_h = 6, bh - 16
         bar_y = by + 8
-        # Thanh trái
         pygame.draw.rect(screen, (230, 230, 230), (bx + bw // 2 - 9, bar_y, bar_w, bar_h), border_radius=3)
-        # Thanh phải
         pygame.draw.rect(screen, (230, 230, 230), (bx + bw // 2 + 3, bar_y, bar_w, bar_h), border_radius=3)
 
-        # Thanh thông tin — góc trái trên
+        # Thanh thông tin
         font_info = pygame.font.SysFont(None, 28)
         info = font_info.render(
             f"Energy: {self.node.state.energy}    Keys: {self.node.state.keys}",
@@ -265,4 +258,3 @@ class PlayScreen:
             self.success.draw(screen)
         elif self.is_failure:
             self.failure.draw(screen)
-
