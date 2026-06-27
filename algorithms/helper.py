@@ -40,7 +40,7 @@ class State:
                         pass
                     
                     # Gặp cổng phải kiểm tra có khóa không
-                    elif self.map[next_x][next_y].isupper() and self.map[next_x][next_y].islower() not in self.keys:
+                    elif self.map[next_x][next_y].isupper() and self.map[next_x][next_y].lower() not in self.keys:
                         moves.remove(move)
 
         return moves
