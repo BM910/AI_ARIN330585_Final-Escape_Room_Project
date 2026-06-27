@@ -15,16 +15,20 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(BASE_DIR, "data", "levels", "sudoku_board.json")) as f:
     sudoku_board = json.load(f)
+with open(os.path.join(BASE_DIR, "data", "levels", "connect_4_board.json")) as f:
+    connect4_board = json.load(f)
 
 SUDOKU_LEVEL = 3  # level nào có ô '@'
+CONNECT_4_LEVEL = 4 # level nào có ô '$'
 
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()
 levels = [0,1,2,3,4,5,6]
-for i in range(1, 4):
+for i in range(1, 5):
     lv, node = load_level(os.path.join(BASE_DIR, "data", "levels", f"level{i}.json"))
-    board = sudoku_board if i == SUDOKU_LEVEL else None
-    levels[i] = PlayScreen(lv, node, board_sudoku=board)
+    s_board = sudoku_board if i == SUDOKU_LEVEL else None
+    c_board = connect4_board if i == CONNECT_4_LEVEL else None
+    levels[i] = PlayScreen(lv, node, board_sudoku=s_board, board_connect4=c_board)
 level = 0
 
 # start
