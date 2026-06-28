@@ -170,7 +170,7 @@ class PlayScreen:
         self.resume_button = pygame.Rect(WIDTH - 60, 10, 45, 45)
         self.is_resume     = False
 
-        # Nút Agent Mode — level 1,2,3 (AIReplayScreen) và level 4 (and_or)
+        # Nút Agent Mode — dùng AIReplayScreen cho level 1-4
         self.agent_button  = pygame.Rect(WIDTH - 220, 10, 145, 45)
         self.is_agent_mode = False
 
@@ -338,10 +338,7 @@ class PlayScreen:
                 return
 
             if self.level in (1, 2, 3, 4) and self.agent_button.collidepoint(event.pos):
-                if self.level in (1, 2, 3):
-                    self._open_agent_mode()
-                else:
-                    return ("and_or", self.start_node)
+                self._open_agent_mode()
                 return
 
         if event.type == pygame.KEYDOWN:
@@ -365,6 +362,7 @@ class PlayScreen:
             1: ["BFS", "DFS", "UCS"],
             2: ["Greedy", "A*", "IDA*"],
             3: ["Hill Climbing", "Local Beam", "Simulated Annealing"],
+            4: ["Partial Observation"],
         }
         algo_names = algo_map.get(self.level, ["BFS", "DFS", "UCS"])
 

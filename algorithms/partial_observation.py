@@ -1,4 +1,7 @@
-from helper import Node, State, generate_new_state, find_start_position
+try:
+    from algorithms.helper import Node, State, generate_new_state, find_start_position
+except ImportError:  # pragma: no cover - fallback for direct script execution
+    from helper import Node, State, generate_new_state, find_start_position
 
 
 # - Quan sát cục bộ 3x3
@@ -27,7 +30,7 @@ def manhattan(x, y, goal_x, goal_y):
     return abs(x - goal_x) + abs(y - goal_y)
 
 
-def partial_observation(actual_map):
+def partial_observation(actual_map, start_energy=None):
     # --- Tìm vị trí S và E ---
     start_x, start_y = find_start_position(actual_map)
     goal_x = goal_y = None
@@ -48,8 +51,9 @@ def partial_observation(actual_map):
          for r in range(rows) for c in range(cols)}
 
     # --- Khởi tạo node đầu ---
-    # energy=inf vì không dùng, keys=set() ban đầu
-    start_state = State(belief_map, start_x, start_y, float('inf'), set())
+    if start_energy is None:
+        start_energy = float('inf')
+    start_state = State(belief_map, start_x, start_y, start_energy, set())
     current_node = Node(start_state, parent=None, action=None, cost=0)
     path = [current_node]
 
