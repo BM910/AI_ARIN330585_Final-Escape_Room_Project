@@ -46,10 +46,10 @@ def forward_check(var, value, vars, domain, assignment, log=None):
             pruned.setdefault(neighbor, []).append(value)
             if log is not None:
                 nr, nc = neighbor
-                log.append(f"  FC ({nr},{nc}) loai {value}: con {sorted(domain[neighbor])}")
+                log.append(f"  ({nr},{nc}) loại {value}: còn {sorted(domain[neighbor])}")
             if not domain[neighbor]:
                 if log is not None:
-                    log.append(f"  ! ({nr},{nc}) mien rong")
+                    log.append(f"  ({nr},{nc}) domain rỗng")
                 return None
     return pruned
 
@@ -68,7 +68,7 @@ def backtrack(vars, domain, assignment, step_count, matrix, log=None):
     r, c = var
 
     if log is not None:
-        log.append(f">> ({r},{c}) mien={sorted(domain[var])}")
+        log.append(f" ({r},{c}) domain={sorted(domain[var])}")
 
     for value in list(domain[var]):
         assignment[var] = value
@@ -76,7 +76,7 @@ def backtrack(vars, domain, assignment, step_count, matrix, log=None):
         matrix[r][c] = value
 
         if log is not None:
-            log.append(f"  dat ({r},{c})={value} [b{step_count[0]}]")
+            log.append(f"  Đặt ({r},{c})={value} [b{step_count[0]}]")
 
         import time
         time.sleep(0.01)
@@ -100,12 +100,12 @@ def backtrack(vars, domain, assignment, step_count, matrix, log=None):
 
 def backtracking_forwardcheck_search(matrix, log=None):
     if log is not None:
-        log.append("ForwardCheck bat dau...")
+        log.append("ForwardCheck bắt đầu...")
 
     vars, domain = get_csp(matrix)
 
     if log is not None:
-        log.append(f"FC: {len(vars)} o trong")
+        log.append(f" Có {len(vars)} ô trống")
         for var in vars:
             if len(domain[var]) > 1:
                 r, c = var
@@ -116,11 +116,11 @@ def backtracking_forwardcheck_search(matrix, log=None):
 
     if result is None:
         if log is not None:
-            log.append("! Khong tim duoc loi giai")
+            log.append("Không tìm được lời giải")
         return None
 
     if log is not None:
-        log.append(f"Giai xong! ({step_count[0]} buoc)")
+        log.append(f"Giải xong! ({step_count[0]} bước)")
 
     for (x, y), val in result.items():
         matrix[x][y] = val

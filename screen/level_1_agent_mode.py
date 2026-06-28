@@ -2,6 +2,7 @@ import pygame
 import copy
 import traceback
 import threading
+import textwrap
 import time
 
 from algorithms.breadth_first_search import bfs
@@ -15,7 +16,6 @@ from algorithms.local_beam import local_beam_search
 from algorithms.simulated_annealing import simulated_annealing
 from algorithms.partial_observation import partial_observation
 
-# ── CONFIG ────────────────────────────────────────────────────────────────────
 WIDTH, HEIGHT = 1280, 760
 CELL          = 56
 
@@ -51,7 +51,6 @@ ALL_ALGOS = {
 
 ALGOS = dict()
 
-# ── DRAW HELPERS ──────────────────────────────────────────────────────────────
 def _find_start(map_):
     for r, row in enumerate(map_):
         for c, v in enumerate(row):
@@ -102,7 +101,6 @@ def draw_robot(surf, rect):
     pygame.draw.circle(surf, (255,50,100), (cx+4, cy-15), 2)
 
 
-# ── MAIN CLASS ────────────────────────────────────────────────────────────────
 class AIReplayScreen:
 
     def __init__(self, start_map, energy=float('inf'), algo_names=['', '', '']):
@@ -163,7 +161,6 @@ class AIReplayScreen:
         self.logs       = ["Đã sẵn sàng."]
         self.result_str = "Hiện chưa có kết quả."
 
-    # ── algorithm ─────────────────────────────────────────────────────────────
 
     def _run_thread(self):
         self.is_solving = True
@@ -217,7 +214,6 @@ class AIReplayScreen:
             f"Bước {self.step_idx:02d}. {str(act) if act else 'START':<8}, E={self.cur_e}, K=[{str_keys}]")
         self.step_idx += 1
 
-    # ── update ────────────────────────────────────────────────────────────────
 
     def update(self):
         if not self.is_playing or not self.path_nodes: return
@@ -225,8 +221,6 @@ class AIReplayScreen:
         if now - self.last_tick > self.delay:
             self.last_tick = now
             self._step()
-
-    # ── draw ──────────────────────────────────────────────────────────────────
 
     def _draw_cell(self, x, y, value):
         rect = pygame.Rect(x, y, CELL, CELL)
@@ -329,12 +323,15 @@ class AIReplayScreen:
 
         by = PANEL_BOTTOM.y
         self.screen.blit(self.ft.render("PATH:", True, (255,100,100)), (16, by+14))
-        res = self.result_str[:185] if len(self.result_str) > 185 else self.result_str
-        self.screen.blit(self.fm.render(res, True, (255,255,200)), (16, by+52))
+        wrapped_lines = textwrap.wrap(self.result_str, width=140)
+        
+        text_y = by + 45  
+        for line in wrapped_lines:
+            self.screen.blit(self.fm.render(line, True, (255, 255, 200)), (16, text_y))
+            text_y += 22  
 
         pygame.display.flip()
 
-    # ── events ────────────────────────────────────────────────────────────────
 
     def handle_click(self, pos):
         for name, rect in self.algo_btns.items():

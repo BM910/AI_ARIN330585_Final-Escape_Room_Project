@@ -1,15 +1,11 @@
-try:
-    from algorithms.helper import Node, State, generate_new_state, find_start_position
-except ImportError:  # pragma: no cover - fallback for direct script execution
-    from helper import Node, State, generate_new_state, find_start_position
+from algorithms.helper import Node, State, generate_new_state, find_start_position
 
-
+# Giải thích:
 # - Quan sát cục bộ 3x3
 # - Không có ô năng lượng
 # - Có chìa khóa và cửa
 # - Những ô chưa từng thấy hiển thị là '?'
 # - Belief map khởi đầu toàn '?' trừ vị trí S và E
-
 
 UNKNOWN = '?'
 
@@ -26,12 +22,10 @@ def get_observation_3x3(actual_map, x, y):
 
 
 def manhattan(x, y, goal_x, goal_y):
-    """Khoảng cách Manhattan từ (x, y) tới đích."""
     return abs(x - goal_x) + abs(y - goal_y)
 
 
 def partial_observation(actual_map, start_energy=None):
-    # --- Tìm vị trí S và E ---
     start_x, start_y = find_start_position(actual_map)
     goal_x = goal_y = None
     for r, row in enumerate(actual_map):
@@ -41,27 +35,24 @@ def partial_observation(actual_map, start_energy=None):
 
     rows, cols = len(actual_map), len(actual_map[0])
 
-    # --- Belief map: mọi ô đều là '?' trừ S và E ---
+    # Belief map: mọi ô đều là '?' trừ S và E
     belief_map = [[UNKNOWN for _ in range(cols)] for _ in range(rows)]
     belief_map[start_x][start_y] = 'S'
     belief_map[goal_x][goal_y] = 'E'
 
-    # --- Bảng heuristic heuristics (khởi tạo = Manhattan) ---
     heuristics = {(r, c): manhattan(r, c, goal_x, goal_y)
          for r in range(rows) for c in range(cols)}
 
-    # --- Khởi tạo node đầu ---
     if start_energy is None:
         start_energy = float('inf')
     start_state = State(belief_map, start_x, start_y, start_energy, set())
     current_node = Node(start_state, parent=None, action=None, cost=0)
     path = [current_node]
 
-    # --- Vòng lặp hành động ---
     while not current_node.state.is_at_goal():
         x, y = current_node.state.x, current_node.state.y
 
-        # Cập nhật belief map: ghi đè các ô trong vùng 3x3 quan sát được
+        # Cập nhật belief map -> các ô trong vùng 3x3 quan sát được
         for (nx, ny), val in get_observation_3x3(actual_map, x, y).items():
             current_node.state.map[nx][ny] = val
 
@@ -70,7 +61,6 @@ def partial_observation(actual_map, start_energy=None):
             print("Agent bị kẹt, không còn nước đi!")
             return None
 
-        # Tính cost dự kiến cho từng nước đi: 1 + heuristics(ô kế tiếp)
         candidates = []
         for action in moves:
             next_state = generate_new_state(current_node.state, action)
@@ -84,14 +74,12 @@ def partial_observation(actual_map, start_energy=None):
             print("Không có nước đi hợp lệ!")
             return None
 
-        # Cập nhật heuristic ô hiện tại (bước "học" của LRTA*)
         heuristics[(x, y)] = min(c[0] for c in candidates)
 
         # Chọn nước đi tốt nhất
         candidates.sort(key=lambda c: c[0])
         _, best_action, best_next = candidates[0]
 
-        # Đồng bộ: chìa khóa đã nhặt → xóa khỏi actual_map
         nx, ny = best_next.x, best_next.y
         if isinstance(actual_map[nx][ny], str) and actual_map[nx][ny].islower():
             actual_map[nx][ny] = '.'

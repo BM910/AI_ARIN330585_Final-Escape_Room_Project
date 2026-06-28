@@ -4,10 +4,8 @@ import traceback
 import threading
 import time
 
-# Import thuật toán sensorless của bạn
 from algorithms.sensorless_bfs_version import sensorless_bfs_version
 
-# ── CONFIG VÀ DRAW HELPERS (Giữ nguyên như cũ) ────────────────────────────────
 WIDTH, HEIGHT = 1280, 760
 CELL          = 56
 
@@ -67,7 +65,6 @@ def draw_robot(surf, rect):
     pygame.draw.circle(surf, (255,50,100), (cx+4, cy-15), 2)
 
 
-# ── MAIN CLASS (SENSORLESS) ───────────────────────────────────────────────────
 class SensorlessReplayScreen:
 
     def __init__(self, start_map, energy=float('inf')):
@@ -89,7 +86,6 @@ class SensorlessReplayScreen:
 
         self._reset_display()
 
-        # Nút bấm cố định cho Sensorless
         y = 70
         self.btn_run   = pygame.Rect(20,  y, 180, 44); y += 54
         self.btn_reset = pygame.Rect(20,  y, 180, 44); y += 54
@@ -102,12 +98,11 @@ class SensorlessReplayScreen:
     def _reset_display(self):
         self.cur_map  = copy.deepcopy(self.start_map)
         
-        # Sensorless không biết vị trí lúc đầu, khởi tạo tạm ở 0,0 để không lỗi UI
         self.cur_x    = 0
         self.cur_y    = 0
         self.cur_e    = self.start_energy
         self.cur_keys = set()
-        self.belief_size = 0 # Lưu số lượng trạng thái
+        self.belief_size = 0 
 
         self.path_nodes = []
         self.step_idx   = 0
@@ -117,14 +112,12 @@ class SensorlessReplayScreen:
         self.logs       = ["Đã sẵn sàng tìm kiếm Sensorless."]
         self.result_str = "Hiện chưa có kết quả."
 
-    # ── algorithm ─────────────────────────────────────────────────────────────
 
     def _run_thread(self):
         self.is_solving = True
         self.logs.append(f"Sensorless BFS đang khởi tạo Belief State...")
         t0 = time.time()
         try:
-            # Gọi trực tiếp thuật toán sensorless
             result  = sensorless_bfs_version(copy.deepcopy(self.start_map), self.start_energy)
             elapsed = time.time() - t0
             nodes   = result if result else []
@@ -149,8 +142,7 @@ class SensorlessReplayScreen:
         """Xử lý node chứa tập hợp Belief State thay vì 1 state"""
         belief_state = node.state
         self.belief_size = len(belief_state)
-        
-        # Lấy trạng thái đầu tiên trong tập hợp làm trạng thái đại diện để vẽ UI
+      
         if self.belief_size > 0:
             rep_state = belief_state[0]
             self.cur_map  = copy.deepcopy(rep_state.map)
@@ -169,14 +161,12 @@ class SensorlessReplayScreen:
         self._apply_node(node)
         act = getattr(node, "action", None)
         
-        # Định dạng Log: Có thêm số lượng trạng thái trong tập hợp (Belief)
         action_str = str(act) if act else 'START'
         self.logs.append(
             f"B{self.step_idx:02d}. {action_str:<5} | Belief: {self.belief_size} states"
         )
         self.step_idx += 1
 
-    # ── update & draw ─────────────────────────────────────────────────────────
 
     def update(self):
         if not self.is_playing or not self.path_nodes: return
@@ -226,7 +216,6 @@ class SensorlessReplayScreen:
 
         self.screen.blit(self.ft.render("SENSORLESS", True, TXT), (20, 20))
         
-        # Chỉ vẽ 1 nhãn đại diện ở Panel Trái
         label_rect = pygame.Rect(20, 70, 180, 44)
         self._btn(label_rect, "Sensorless BFS", (80,200,120), (10,20,10), font=self.fm)
 
@@ -255,25 +244,21 @@ class SensorlessReplayScreen:
             f"Step: {self.step_idx}/{total}" if total else "Step: -/-",
             True, (160,200,160)), (20, self.btn_step.bottom + 8))
 
-        # Vẽ Map
         for r in range(self.rows):
             for c in range(self.cols):
                 self._draw_cell(self.ox + c*CELL, self.oy + r*CELL,
                                 self.cur_map[r][c])
         
-        # Chỉ vẽ robot nếu có ít nhất 1 state trong Belief State
         if self.belief_size > 0:
             draw_robot(self.screen, pygame.Rect(
                 self.ox + self.cur_y * CELL,
                 self.oy + self.cur_x * CELL, CELL, CELL))
 
-        # Hiển thị HUD có thêm số lượng Belief
         hud = (f"REPRESENTATIVE E: {self.cur_e} | "
                f"BELIEF SIZE: {self.belief_size}")
         self.screen.blit(self.fm.render(hud, True, (255,200,50)),
                          (PANEL_CENTER.x + 16, 12))
 
-        # Vẽ Log
         self.screen.blit(self.ft.render("TERMINAL LOG", True, TXT),
                          (PANEL_RIGHT.x + 12, 18))
         ly = 54
@@ -291,8 +276,6 @@ class SensorlessReplayScreen:
         self.screen.blit(self.fm.render(res, True, (255,255,200)), (16, by+52))
 
         pygame.display.flip()
-
-    # ── events ────────────────────────────────────────────────────────────────
 
     def handle_click(self, pos):
         if self.btn_run.collidepoint(pos):

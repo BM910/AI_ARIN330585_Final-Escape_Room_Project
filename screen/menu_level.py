@@ -48,7 +48,6 @@ class LevelScreen:
             text_rect = text.get_rect(center=button.center)
             screen.blit(text, text_rect)
 
-        # --- 4. Vẽ nút Đóng (X) màu đỏ ---
         pygame.draw.rect(screen, (230, 50, 50), self.back_button, border_radius=5)
         
         font_close = pygame.font.Font(None, 24)

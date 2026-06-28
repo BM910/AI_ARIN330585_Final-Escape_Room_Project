@@ -1,7 +1,7 @@
 import pygame
 import copy
 from algorithms.and_or import and_or_search
-from screen.draw_helpers import draw_cell, draw_robot   # ← helper pixel-art
+from screen.draw_helpers import draw_cell, draw_robot 
 
 CELL_SIZE     = 60
 WIDTH, HEIGHT = 1000, 600
@@ -66,9 +66,7 @@ class AndOrSolution:
         self.font_log  = pygame.font.SysFont("monospace", 15)
         self.font_info = pygame.font.SysFont(None, 24)
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
+    # helper
     def _flat_plan(self, plan):
         if not plan or plan == "failure":
             return []
@@ -82,7 +80,7 @@ class AndOrSolution:
         return []
 
     def _do_solve(self):
-        self.log.append("⏳ Running AND-OR search…")
+        self.log.append("  Running AND-OR search…")
         self.node         = copy.deepcopy(self.start_node)
         self.step_index   = 0
         self.done         = False
@@ -94,11 +92,11 @@ class AndOrSolution:
         self.solution = and_or_search(self.start_node.state)
 
         if not self.solution or self.solution == "failure":
-            self.log.append("❌ No solution found.")
+            self.log.append("  No solution found.")
             self.path = []
         else:
             self.path = self._flat_plan(self.solution)
-            self.log.append("✅ Found plan.")
+            self.log.append("  Found plan.")
 
     def _apply_step(self):
         if self.branches:
@@ -115,7 +113,7 @@ class AndOrSolution:
                 if self.branches:
                     _, next_node, next_act, (nx, ny) = self.branches[0]
                     self.node = copy.deepcopy(next_node)
-                    self.log.append(f"  → Nhánh {next_act}: ({nx},{ny})")
+                    self.log.append(f"  -> Nhánh {next_act}: ({nx},{ny})")
                 else:
                     self.branch_node = None
                     if self.step_index < len(self.path):
@@ -123,7 +121,7 @@ class AndOrSolution:
                     else:
                         self.done    = True
                         self.running = False
-                        self.log.append("🏁 Tất cả nhánh hoàn thành.")
+                        self.log.append("  Tất cả nhánh hoàn thành.")
             return
 
         if not self.path or self.step_index >= len(self.path):
@@ -132,7 +130,7 @@ class AndOrSolution:
         action = self.path[self.step_index]
 
         if isinstance(action, dict) and all(isinstance(k, str) for k in action.keys()):
-            self.log.append("⚡ Ô '+' — phân nhánh:")
+            self.log.append("  Ô '+' — phân nhánh:")
             self.branch_node = copy.deepcopy(self.node)
             self.branches     = []
             self.branch_index = 1
@@ -161,7 +159,7 @@ class AndOrSolution:
         if isinstance(action, dict):
             key = self.node.state.get_tuple_no_energy()
             if key not in action:
-                self.log.append("⚠️ State không khớp nhánh nào.")
+                self.log.append(" State không khớp nhánh nào.")
                 self.done    = True
                 self.running = False
                 return
@@ -176,7 +174,7 @@ class AndOrSolution:
         if self.step_index >= len(self.path) and not self.branches:
             self.done    = True
             self.running = False
-            self.log.append("🏁 Reached goal.")
+            self.log.append(" Reached goal.")
 
     def _move(self, direction):
         dx, dy = {"UP":(-1,0),"DOWN":(1,0),
@@ -212,9 +210,7 @@ class AndOrSolution:
         self.node.state.map  = m
         self.node.state.keys = ks
 
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
+
     def update(self):
         if self.running and not self.done:
             self._apply_step()
@@ -254,9 +250,7 @@ class AndOrSolution:
                                              self.log_scroll + event.y))
         return None
 
-    # ------------------------------------------------------------------
-    # Draw
-    # ------------------------------------------------------------------
+    # Phần vẽ giao diện
     def draw(self, screen):
         screen.fill(BG)
         self._draw_left(screen)
@@ -274,7 +268,7 @@ class AndOrSolution:
         if self.solution == "failure" or (self.solution is None and self.log):
             status, sc = "No solution", (255, 100, 100)
         elif self.done:
-            status, sc = "Done ✓", (100, 255, 150)
+            status, sc = "Done", (100, 255, 150)
         elif self.solution:
             status, sc = f"{self.step_index}/{len(self.path)}", (200, 200, 255)
         else:
@@ -283,12 +277,10 @@ class AndOrSolution:
         screen.blit(self.font_info.render(status, True, sc), (20, 470))
         if self.running:
             screen.blit(
-                self.font_info.render("● Running", True, (255, 200, 60)),
+                self.font_info.render("Running", True, (255, 200, 60)),
                 (20, 495))
 
-    # ------------------------------------------------------------------
-    # _draw_matrix — dùng draw_helpers pixel-art
-    # ------------------------------------------------------------------
+
     def _draw_matrix(self, screen):
         gmap = self.node.state.map
         rows, cols = len(gmap), len(gmap[0])
@@ -304,19 +296,15 @@ class AndOrSolution:
                 py   = off_y + r * CELL_SIZE
                 rect = (px, py, CELL_SIZE, CELL_SIZE)
 
-                # Dùng draw_cell từ draw_helpers thay vì màu đơn giản
                 draw_cell(screen, rect, gmap[r][c])
 
-                # Lưới đen bao ngoài
                 pygame.draw.rect(screen, (0, 0, 0), rect, 1)
 
-        # Robot (player) — dùng draw_robot từ draw_helpers
         pr = (off_x + self.node.state.y * CELL_SIZE,
               off_y + self.node.state.x * CELL_SIZE,
               CELL_SIZE, CELL_SIZE)
         draw_robot(screen, pr)
 
-        # Info bar phía dưới
         keys_str = ', '.join(sorted(self.node.state.keys)) \
                    if self.node.state.keys else '—'
         info = self.font_info.render(
@@ -324,7 +312,7 @@ class AndOrSolution:
             True, (220, 220, 220))
         screen.blit(info, (PANEL_L + 10, HEIGHT - 28))
 
-    # ------------------------------------------------------------------
+
     def _draw_log(self, screen):
         rx = WIDTH - PANEL_R
         pygame.draw.rect(screen, LOG_BG, (rx, 0, PANEL_R, HEIGHT))

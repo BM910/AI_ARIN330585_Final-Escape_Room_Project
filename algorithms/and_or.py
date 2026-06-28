@@ -12,7 +12,7 @@ def or_search(state, path):
     if state.get_tuple_no_energy() in path:
         return 'failure'
     
-    # Đang đứng trên '+' → thu thập plan cho tất cả action
+    # Đang đứng trên '+' -> thu thập plan cho tất cả action
     if state.map[state.x][state.y] == '+':
         all_plans = {}
         for action in state.get_moves():
@@ -24,7 +24,7 @@ def or_search(state, path):
                 all_plans[action] = plan
         return all_plans if all_plans else 'failure'
 
-    # Bình thường → dừng sớm khi tìm được plan
+    # Bình thường -> dừng sớm khi tìm được plan
     for action in state.get_moves():
         result_states = generate_new_state(state, action)
         if result_states is None:
@@ -36,7 +36,6 @@ def or_search(state, path):
     return 'failure'
     
 def and_search(states, path):
-    # states là list (AND node) hoặc 1 state (deterministic)
     if not isinstance(states, list):
         states = [states]
 
@@ -49,7 +48,6 @@ def and_search(states, path):
 
         plans[s.get_tuple_no_energy()] = plan_s
 
-    # Deterministic → trả về plan trực tiếp
     if len(states) == 1:
         return plans[states[0].get_tuple_no_energy()]
 

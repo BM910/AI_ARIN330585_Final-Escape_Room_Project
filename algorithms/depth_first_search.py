@@ -14,6 +14,7 @@ def is_state_in_reached(state: State, reached):
 
 
 def dfs_version_2(start_map, energy=float("inf")):
+    """Thuật toán dfs cách tiếp cận 2"""
     if not start_map:
         return None
     

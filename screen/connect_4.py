@@ -8,9 +8,7 @@ from algorithms.minimax_search import minimax_search
 from algorithms.alpha_beta_search import alpha_beta_search
 from algorithms.expectimax import expectimax
 
-
-# ===================== HELPER FUNCTIONS =====================
-
+# helper
 def get_valid_cols(board):
     return [c for c in range(len(board[0])) if board[0][c] == 0]
 
@@ -66,8 +64,7 @@ ALGO_MAP = {
     "Expectimax": expectimax,
 }
 
-# ===================== LAYOUT (tương đối, không hardcode cửa sổ) =====================
-
+# Layout
 ROWS_B, COLS_B = 6, 7
 SQ       = 72
 RADIUS   = SQ // 2 - 5
@@ -113,7 +110,6 @@ class ConnectFour:
         self.algorithms = list(ALGO_MAP.keys())
         self.algo_idx   = 0
 
-        # --- Tính tọa độ nút (tuyệt đối trên screen) ---
         lx = self.ox + BOARD_W       # x bắt đầu log panel
         PAD, BTN_H = 10, 28
 
@@ -145,29 +141,26 @@ class ConnectFour:
             "ESC: đóng hộp thoại này.",
         ]
 
-        # Surface riêng để vẽ component — tránh ảnh hưởng nền game
         self._surface = pygame.Surface((TOTAL_W, TOTAL_H))
         self._close_rect = pygame.Rect(0, 0, 0, 0)
 
         self.reset()
 
-    # ── public interface ─────────────────────────────────────────
 
     def reset(self):
         self.board        = [[0] * COLS_B for _ in range(ROWS_B)]
         self.game_over    = False
         self.game_started = False
-        self.current_turn = 1          # Agent (đỏ) đi trước
+        self.current_turn = 1        
         self.is_animating = False
         self.anim_piece   = None
         self.status       = "Chọn thuật toán và ấn Bắt đầu"
         self.log_entries  = []
         self.hover_col    = -1
         self.show_info    = False
-        self._agent_won   = False      # cờ để trả về "solved"
+        self._agent_won   = False    
 
     def handle_event(self, event):
-        """Trả về 'solved' nếu AGENT thắng (người chơi vượt qua thử thách khi enemy thắng cũng ok — tuỳ bạn đổi)."""
         if self._agent_won:
             return "solved"
 
@@ -176,7 +169,7 @@ class ConnectFour:
 
         if event.type == pygame.MOUSEMOTION:
             mx, my = event.pos
-            # Chuyển về tọa độ nội bộ
+
             lx = mx - self.ox
             ly = my - self.oy
             self.hover_col = lx // SQ if 0 <= lx < BOARD_W and HEADER_H <= ly < HEADER_H + BOARD_H else -1
@@ -184,7 +177,6 @@ class ConnectFour:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mx, my = event.pos
 
-            # Nếu dialog đang mở
             if self.show_info:
                 if self._close_rect.collidepoint(mx, my):
                     self.show_info = False
@@ -231,8 +223,6 @@ class ConnectFour:
 
         # Dán surface lên screen tại offset
         screen.blit(sf, (self.ox, self.oy))
-
-    # ── internal draw ────────────────────────────────────────────
 
     def _draw_header(self, sf):
         pygame.draw.rect(sf, C_HEADER_BG, (0, 0, BOARD_W, HEADER_H))
@@ -309,7 +299,6 @@ class ConnectFour:
                 sf.blit(s, (lx + 8, y0 + i * line_h + j * line_h))
 
     def _draw_help_btn(self, sf):
-        # tọa độ nội bộ: góc phải header của board
         r = pygame.Rect(BOARD_W - 36, PAD := 8, 26, 26)
         mouse = (pygame.mouse.get_pos()[0] - self.ox, pygame.mouse.get_pos()[1] - self.oy)
         hov = r.collidepoint(mouse)
@@ -342,7 +331,6 @@ class ConnectFour:
         s = self.font_sm.render("Đã hiểu [ESC]", True, C_BTN_TXT)
         sf.blit(s, s.get_rect(center=cr_local.center))
 
-        # Lưu close_rect theo tọa độ tuyệt đối để detect click
         self._close_rect = pygame.Rect(
             cr_local.x + self.ox, cr_local.y + self.oy,
             cr_local.w, cr_local.h
@@ -360,8 +348,7 @@ class ConnectFour:
         surf = self.font_md.render(text, True, fg)
         sf.blit(surf, surf.get_rect(center=rect.center))
 
-    # ── animation ────────────────────────────────────────────────
-
+   # animation
     def _update_anim(self, sf):
         if not self.is_animating or not self.anim_piece: return
         p = self.anim_piece
@@ -389,8 +376,6 @@ class ConnectFour:
                 }
                 return
 
-    # ── game logic ───────────────────────────────────────────────
-
     def _add_log(self, text, color=C_TEXT):
         self.log_entries.append((text, color))
 
@@ -398,7 +383,7 @@ class ConnectFour:
         if is_terminal(self.board, last_player):
             if last_player == 1:
                 self.status  = "Agent (Đỏ) THẮNG — vượt thử thách THÀNH CÔNG!"
-                self._agent_won = True          # → handle_event sẽ trả "solved"
+                self._agent_won = True      
             else:
                 self.status  = "Enemy Bot (Xanh) thắng!"
             self.game_over = True
@@ -447,5 +432,5 @@ class ConnectFour:
         _, col = random_search(self.board)
         if col is None: return
         move_num = sum(c != 0 for row in self.board for c in row) + 1
-        self._add_log(f"#{move_num} Enemy Bot → cột {col+1}", C_P2)
+        self._add_log(f"#{move_num} Enemy Bot -> cột {col+1}", C_P2)
         self._start_drop(col, 2)

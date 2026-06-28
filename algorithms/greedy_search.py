@@ -12,6 +12,7 @@ def calculate_manhattan(state : State):
 
 
 def greedy(start_map, energy=float("inf")):
+    """Thuật toán greedy, h(n) = khoảng cách Manhattan từ Agent đến đích"""
     if not start_map:
         return
     

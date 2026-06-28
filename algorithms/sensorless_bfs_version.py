@@ -3,7 +3,6 @@ from collections import deque
 import copy
 
 def get_tuple_representation_no_energy(state):
-        # Trả về một đại diện dạng tuple
         flat_map = tuple(tuple(row) for row in state.map)
         return (state.x, state.y, tuple(sorted(list(state.keys))), flat_map)
 
@@ -38,6 +37,7 @@ def is_state_in_reached(state_set, reached):
 
 
 def sensorless_bfs_version(start_map, energy=float("inf")):
+    """Thuật toán BFS dùng trong môi trường không nhìn thấy, biết G không biết S"""
     if not start_map:
         return None
     

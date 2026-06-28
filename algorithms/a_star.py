@@ -20,6 +20,7 @@ def pop_min_cost_state(frontier):
 
 
 def a_star(start_map, energy=float("inf")):
+    """Thuật toán A*, h(n) = khoảng cách Manhattan từ Agent đến đích, g(n) = g(parent) + hao phí năng lượng của nước di chuyển"""
     if not start_map:
         return
     
@@ -48,13 +49,13 @@ def a_star(start_map, energy=float("inf")):
             tuple_state = next_state.get_tuple_representation()
             g_new = node.cost['g_n'] + ((node.state.energy - next_state.energy) if  node.state.energy > next_state.energy else 0)
 
-            if tuple_state in reached:     # Nếu state đã xét và có cost tối ưu hơn --> Xóa trong reached để xét lại
+            if tuple_state in reached:     # Nếu state đã xét và có cost tối ưu hơn -> Xóa trong reached để xét lại
                 if g_new >= reached[next_state.get_tuple_representation()]:
                     continue
                 else:
                     del reached[next_state.get_tuple_representation()]
             
-            if tuple_state in frontier:     # Nếu state trong frontier và có cost tối ưu hơn --> Thay thế node trong frontier
+            if tuple_state in frontier:     # Nếu state trong frontier và có cost tối ưu hơn -> Thay thế node trong frontier
                 node_in_frontier = frontier[tuple_state]
                 if node_in_frontier.cost['g_n'] > g_new:
                     node_in_frontier.cost['g_n'] = g_new

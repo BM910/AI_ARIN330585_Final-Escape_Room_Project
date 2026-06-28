@@ -2,6 +2,7 @@ from algorithms.helper import Node, State, generate_new_state, get_result_path, 
 from collections import deque
 
 def bfs(start_map, energy=float("inf")):
+    """Thuật toán bfs cách tiếp cận 2"""
     if not start_map:
         return None
     
@@ -34,7 +35,7 @@ def bfs(start_map, energy=float("inf")):
 
             state_tuple = child_node.state.get_tuple_representation()
 
-            if state_tuple not in reached:
+            if state_tuple not in reached and child_node.state not in frontier:
                 reached.add(state_tuple)
                 frontier.append(child_node)
 

@@ -1,6 +1,7 @@
 from algorithms.helper import Node, State, generate_new_state, get_result_path, find_start_position
 
 def ucs(start_map, energy=float("inf")):
+    """Thuật toán UCS, g(n) = g(parent) + năng lượng hao phí của bước di chuyển"""
     if not start_map:
         return None 
     
@@ -41,7 +42,7 @@ def ucs(start_map, energy=float("inf")):
             if child_state in reached and reached[child_state] <= new_cost:
                 continue
 
-            # Kiểm tra reached
+            # Kiểm tra frontier
             if child_state in frontier_cost and frontier_cost[child_state] <= new_cost:
                 continue
 

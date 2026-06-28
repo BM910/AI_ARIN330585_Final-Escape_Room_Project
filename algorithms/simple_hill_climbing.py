@@ -10,10 +10,10 @@ def calculate_manhattan(state: State):
 
 
 def simple_hill_climbing(start_map, energy=float("inf")):
+    """Thuật toán Simple hill climbing, h(n) = Khoảng cách Manhattan từ Agent đến đích"""
     if not start_map:
         return None
     
-    # Khởi tạo trạng thái ban đầu
     x, y = find_start_position(start_map)
     state = State(start_map, x, y, energy, set())
     current_node = Node(state, parent=None, action=None, cost=0)
@@ -22,29 +22,24 @@ def simple_hill_climbing(start_map, energy=float("inf")):
         if current_node.state.is_at_goal():
             return get_result_path(current_node)
             
-        # Tính toán độ tốt (heuristic) của trạng thái hiện tại
         current_h = calculate_manhattan(current_node.state)
         
         moves = current_node.state.get_moves()
         neighbor_moved = False
         
-        # DUYỆT TỪNG NƯỚC ĐI (Đặc trưng của Simple Hill Climbing)
         for action in moves:
             next_state = generate_new_state(current_node.state, action)
             if next_state is None:
                 continue
                 
-            # Tính heuristic của trạng thái láng giềng
             neighbor_h = calculate_manhattan(next_state)
             
-            # CHỈ CẦN TỐT HƠN TRẠNG THÁI HIỆN TẠI -> CHỌN NGAY VÀ NGẮT VÒNG LẶP
             if neighbor_h < current_h:
                 child_node = Node(next_state, current_node, action, current_node.cost + 1)
-                current_node = child_node  # Di chuyển sang node mới
+                current_node = child_node 
                 neighbor_moved = True
-                break # không tìm kiếm thêm nữa
+                break 
 
-        # Nếu đã duyệt hết tất cả láng giềng mà không có ô nào tốt hơn -> bị kẹt
         if not neighbor_moved:
             return get_result_path(current_node)
         

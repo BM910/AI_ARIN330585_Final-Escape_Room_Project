@@ -16,7 +16,7 @@ class State:
 
         move_directions = {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
 
-        # Đang đứng trên '+' → loạn điều khiển, chỉ check tường
+        # Đang đứng trên '+' -> loạn điều khiển, chỉ check tường
         if self.map[self.x][self.y] == '+':
             for move in move_directions:
                 dx, dy = move_directions[move]
@@ -37,7 +37,7 @@ class State:
             dx, dy = move_directions[move]
             next_x, next_y = self.x + dx, self.y + dy
 
-            # Gặp boost/ bẫy --> Check lại năng lượng sau đó
+            # Gặp boost/ bẫy -> Check lại năng lượng sau đó
             if isinstance(self.map[next_x][next_y], int):
                 if self.energy - 1 + self.map[next_x][next_y] < 0:
                     moves.remove(move)
@@ -74,7 +74,7 @@ def generate_new_state(state, move):
     map, x, y, energy, keys = copy.deepcopy(state.map), state.x, state.y, state.energy, copy.deepcopy(state.keys)
     move_directions = {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
 
-    # Đang đứng trên '+' → trả về list tất cả state có thể xảy ra
+    # Đang đứng trên '+' -> trả về list tất cả state có thể xảy ra
     if map[x][y] == '+':
         map[x][y] = '.'  # ô '+' mất sau khi dùng
         results = []
@@ -94,7 +94,7 @@ def generate_new_state(state, move):
                     results.append(State(m2, nx, ny, e2, k2))
         return results  # AND node
 
-    # Bình thường → di chuyển theo đúng move
+    # Bình thường -> di chuyển theo đúng move
     dx, dy = move_directions[move]
     x, y = x + dx, y + dy
     energy -= 1

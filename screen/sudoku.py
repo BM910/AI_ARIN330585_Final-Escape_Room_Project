@@ -7,7 +7,6 @@ from algorithms.min_conflict import min_conflict
 from algorithms.backtracking_and_forwardcheck import backtracking_forwardcheck_search
 from screen.resume import ResumeScreen
 
-# ── CONSTANTS ────────────────────────────────────────────────────
 WIDTH, HEIGHT = 1000, 600
 
 PANEL_W = 160
@@ -17,18 +16,15 @@ GRID_SIZE = min(HEIGHT - 40, WIDTH - PANEL_W - LOG_W - 40)
 CELL    = GRID_SIZE // 9
 GRID_Y  = (HEIGHT - GRID_SIZE) // 2
 
-# Panel trái
 PANEL_RECT      = pygame.Rect(8, 8, PANEL_W - 16, HEIGHT - 16)
 PANEL_BG        = (255, 255, 255)
 PANEL_BORDER    = (200, 200, 192)
 
-# Màu nút thuật toán
 COLOR_AC3   = (70,  130, 180)
 COLOR_MC    = (100, 160, 80)
 COLOR_FC    = (180, 110, 60)
 COLOR_SOLVE = (80,  80,  180)
 
-# Log terminal
 LOG_BG          = (22,  26,  30)
 LOG_BORDER      = (50,  55,  60)
 LOG_HEADER_COL  = (100, 200, 120)
@@ -37,17 +33,14 @@ LOG_TEXT_OK     = (140, 210, 140)
 LOG_TEXT_ERR    = (220, 100, 80)
 LOG_LINE_H      = 16
 
-# Nút menu
 MENU_BTN_BG     = (40,  44,  48)
 MENU_BTN_FG     = (180, 180, 180)
 
-# Font
 FONT_BTN    = ("segoeui", 14)
 FONT_TITLE  = ("segoeui", 16)
 FONT_NUM    = ("consolas", CELL // 2)
 FONT_MONO   = ("consolas", 12)
 
-# Status
 STATUS_OK_COL   = (50,  160, 80)
 STATUS_FAIL_COL = (160, 80,  80)
 TIMER_COL       = (200, 160, 60)
@@ -68,13 +61,13 @@ class Sudoku:
         self.is_resume = False
         self.log       = []
 
-        self.selected_algo = None  # "mc", "ac3", "fc"
+        self.selected_algo = None  
         self.is_solving    = False
         self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
         self.log_scroll    = 0
-        self._solve_start  = 0.0   # time.perf_counter() lúc bắt đầu
-        self._last_elapsed = None  # float ms sau khi xong, None nếu chưa chạy
+        self._solve_start  = 0.0  
+        self._last_elapsed = None 
 
     def is_goal(self):
         board = self.board
@@ -127,7 +120,6 @@ class Sudoku:
         font_title = pygame.font.SysFont(*FONT_TITLE, bold=True)
         font_mono  = pygame.font.SysFont(*FONT_MONO)
 
-        # ── 1. VẼ LƯỚI SUDOKU ────────────────────────────────────
         for r in range(9):
             for c in range(9):
                 x    = GRID_X + c * CELL
@@ -154,7 +146,6 @@ class Sudoku:
                             (GRID_X + i * CELL * 3, GRID_Y),
                             (GRID_X + i * CELL * 3, GRID_Y + GRID_SIZE), lw)
 
-        # ── 2. PANEL TRÁI (NÚT) ──────────────────────────────────
         pygame.draw.rect(screen, PANEL_BG,     PANEL_RECT, border_radius=10)
         pygame.draw.rect(screen, PANEL_BORDER, PANEL_RECT, 1, border_radius=10)
 
@@ -198,7 +189,6 @@ class Sudoku:
         else:
             self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
-        # ── ĐỒNG HỒ / THỜI GIAN KẾT QUẢ ────────────────────────
         if self.is_solving:
             # Đang chạy: đếm lên
             elapsed = time.perf_counter() - self._solve_start
@@ -206,21 +196,18 @@ class Sudoku:
             t = font_btn.render(timer_str, True, TIMER_COL)
             screen.blit(t, t.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 64))
         else:
-            # Đã xong: hiện thời gian kết quả cố định phía trên status
             if self._last_elapsed is not None:
                 ms = self._last_elapsed
                 time_str = f"{ms/1000:.2f}s" if ms >= 1000 else f"{ms:.1f}ms"
                 t = font_btn.render(time_str, True, TIMER_COL)
                 screen.blit(t, t.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 64))
 
-            # Status Da giai / Chua giai
             if self.is_goal():
                 s = font_btn.render("Da giai!", True, STATUS_OK_COL)
             else:
                 s = font_btn.render("Chua giai...", True, STATUS_FAIL_COL)
             screen.blit(s, s.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 44))
 
-        # ── 3. PANEL PHẢI (LOG TERMINAL) ─────────────────────────
         log_x    = GRID_X + GRID_SIZE + 20
         log_rect = pygame.Rect(log_x, 8, LOG_W - 12, HEIGHT - 16)
         pygame.draw.rect(screen, LOG_BG,     log_rect, border_radius=10)
@@ -264,7 +251,6 @@ class Sudoku:
             pygame.draw.rect(screen, (120, 130, 120),
                             pygame.Rect(log_x + LOG_W - 18, thumb_y, 6, thumb_h), border_radius=3)
 
-        # ── 4. RESUME OVERLAY ────────────────────────────────────
         if self.is_resume:
             self.resume.draw(screen)
 

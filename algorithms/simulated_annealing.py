@@ -16,6 +16,7 @@ def calculate_heuristic(state: State):
         
 
 def simulated_annealing(start_map, energy=float("inf")):
+    """Thuật toán mô phỏng luyện kim, g(n) = Khoảng cách Manhattan tới đích + 2 x Số chìa khóa còn lại, T=90, T_min=1, alpha=0.97"""
     if not start_map:
         return None
     
@@ -25,8 +26,8 @@ def simulated_annealing(start_map, energy=float("inf")):
 
     # Gán cố định
     T = 90       
-    T_min = 0.01
-    alpha = 0.99
+    T_min = 1
+    alpha = 0.97
 
     while T > T_min: 
         if current_node.state.is_at_goal():

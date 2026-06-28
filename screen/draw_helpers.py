@@ -1,6 +1,6 @@
 import pygame
 
-CELL_SIZE = 80   # default; caller có thể truyền size khác qua param
+CELL_SIZE = 80 
 
 KEY_COLORS = {
     'a': (255, 200,  40),
@@ -10,7 +10,6 @@ KEY_COLORS = {
     'e': ( 80, 220, 200),
 }
 
-# ── PIXEL-ART DRAW HELPERS ──────────────────────────────────────────
 
 def draw_floor(surf, rect):
     x, y, w, h = rect
@@ -39,24 +38,21 @@ def draw_door(surf, rect, ch):
     dy  = y + int(h * 0.20)
     r   = dw // 2
 
-    # Thân chữ nhật
     pygame.draw.rect(surf, col, (dx, dy + r, dw, dh))
 
-    # Vòm — chỉ vẽ nửa trên bằng polygon hình bán nguyệt
     import math
     arc_pts = [(dx + r + int(r * math.cos(math.radians(a))),
                 dy + r + int(r * math.sin(math.radians(a))))
                for a in range(180, 361, 5)]
     pygame.draw.polygon(surf, col, arc_pts)
 
-    # Viền 3 cạnh thân (bỏ cạnh trên tiếp xúc vòm)
-    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r),          (dx, dy + r + dh),      2)  # trái
-    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r + dh),     (dx + dw, dy + r + dh), 2)  # dưới
-    pygame.draw.line(surf, (20, 20, 20), (dx + dw, dy + r + dh),(dx + dw, dy + r),      2)  # phải
+    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r),          (dx, dy + r + dh),      2) 
+    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r + dh),     (dx + dw, dy + r + dh), 2)
+    pygame.draw.line(surf, (20, 20, 20), (dx + dw, dy + r + dh),(dx + dw, dy + r),      2) 
     pygame.draw.arc(surf, (20, 20, 20),
                     (dx, dy, dw, dw), math.radians(0), math.radians(180), 2)
 
-    # Tay nắm bên trái
+
     kx = dx + int(dw * 0.30)
     ky = dy + r + int(dh * 0.50)
     pygame.draw.circle(surf, (20, 20, 20), (kx, ky), max(2, w // 18))
@@ -138,7 +134,6 @@ def draw_sudoku_tile(surf, rect):
 
 
 def draw_random_tile(surf, rect):
-    """Ô '+' — mũi tên 4 chiều dạng thập tự."""
     x, y, w, h = rect
     pygame.draw.rect(surf, (60, 20, 90), rect)
     cx, cy = x + w // 2, y + h // 2
@@ -147,13 +142,12 @@ def draw_random_tile(surf, rect):
     shaft = int(w * 0.10)
     head  = int(w * 0.16)
     tip   = int(w * 0.05)
-    COL   = (255, 109, 0)   # cam đậm
+    COL   = (255, 109, 0) 
 
-    # Thân thập tự
     pygame.draw.rect(surf, COL, (cx - shaft, cy - arm, shaft*2, arm*2))
     pygame.draw.rect(surf, COL, (cx - arm, cy - shaft, arm*2, shaft*2))
 
-    # Đầu mũi tên UP
+    # UP
     pygame.draw.polygon(surf, COL, [
         (cx,        cy - arm - head),
         (cx - head, cy - arm + tip),
@@ -191,15 +185,7 @@ def draw_robot(surf, rect):
     pygame.draw.circle(surf, (255, 50, 100), (cx+a,  cy-a*2), max(1, a//2))
 
 
-# ── KEY BAR INDICATOR ───────────────────────────────────────────────
-
 def draw_key_bar(surf, keys, x, y, size=28):
-    """Vẽ icon chìa khóa nhỏ cho mỗi key đang giữ.
-    keys : set of str, vd {'a', 'b'}
-    x, y : góc trên trái bắt đầu vẽ
-    size : kích thước mỗi icon (px)
-    Trả về x tiếp theo sau icon cuối cùng.
-    """
     if not keys:
         return x
 
@@ -235,13 +221,7 @@ def draw_key_bar(surf, keys, x, y, size=28):
 
     return x
 
-
-# ── UNIFIED CELL DISPATCHER ─────────────────────────────────────────
-
 def draw_cell(surf, rect, value):
-    """Vẽ một ô bản đồ dựa theo giá trị.
-    rect = (px, py, cell_w, cell_h)
-    """
     if value == '#':
         draw_brick(surf, rect)
     elif value == 'S':

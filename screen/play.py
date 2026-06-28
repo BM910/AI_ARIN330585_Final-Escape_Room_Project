@@ -13,9 +13,6 @@ from screen.draw_helpers import draw_cell, draw_robot, draw_key_bar
 CELL_SIZE     = 80
 WIDTH, HEIGHT = 1000, 600
 
-
-# ── PLAY SCREEN ──────────────────────────────────────────────────────
-
 class PlayScreen:
     def __init__(self, level, node, board_sudoku=None, board_connect4=None):
         self.level      = level
@@ -59,7 +56,6 @@ class PlayScreen:
             "exit":        self.exit,
         }
 
-    # ── di chuyển ────────────────────────────────────────────────
 
     def move(self, direction):
         match direction:
@@ -145,7 +141,6 @@ class PlayScreen:
         self.node.state.keys   = keys
         self.node.state.energy = energy
 
-    # ── handle_event ─────────────────────────────────────────────
 
     def handle_event(self, event):
         if self.is_agent_mode:
@@ -215,8 +210,6 @@ class PlayScreen:
 
         return None
 
-    # ── Agent Mode ────────────────────────────────────────────────
-
     def _open_agent_mode(self):
         self.is_agent_mode = True
         start_map    = copy.deepcopy(self.start_node.state.map)
@@ -235,8 +228,6 @@ class PlayScreen:
 
         pygame.display.set_mode((WIDTH, HEIGHT))
         self.is_agent_mode = False
-
-    # ── reset / navigation ────────────────────────────────────────
 
     def reset(self):
         self.node          = copy.deepcopy(self.start_node)
@@ -263,7 +254,6 @@ class PlayScreen:
     def menu(self):
         return "menu level"
 
-    # ── draw ──────────────────────────────────────────────────────
 
     def draw(self, screen):
         if self.is_agent_mode:

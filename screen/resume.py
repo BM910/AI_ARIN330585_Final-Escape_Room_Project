@@ -44,10 +44,9 @@ class ResumeScreen:
         self.reset_button = pygame.Rect(BTN_X, BTN_Y + BTN_H + BTN_GAP,              BTN_W, BTN_H)
         self.exit_button  = pygame.Rect(BTN_X, BTN_Y + (BTN_H + BTN_GAP) * 2,       BTN_W, BTN_H)
 
-        self.font = None  # lazy init, tránh lỗi khi pygame chưa init
+        self.font = None 
 
     def _make_vignette(self):
-        """Tạo lớp vignette: tối ở rìa, trong suốt ở giữa."""
         surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         cx, cy = WIDTH // 2, HEIGHT // 2
         max_r  = (cx**2 + cy**2) ** 0.5

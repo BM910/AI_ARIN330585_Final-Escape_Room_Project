@@ -4,24 +4,24 @@ import json
 from screen.start import StartScreen
 from screen.menu_level import LevelScreen
 from screen.play import PlayScreen
-from screen.and_or_solution import AndOrSolution   # thêm từ code hiện tại
+from screen.and_or_solution import AndOrSolution 
 from data.levels.Load_level import load_level
 
 pygame.init()
 
 WIDTH, HEIGHT = 1000, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()                         # thêm từ code hiện tại
+clock = pygame.time.Clock()                   
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(BASE_DIR, "data", "levels", "sudoku_board.json")) as f:
     sudoku_board = json.load(f)
-with open(os.path.join(BASE_DIR, "data", "levels", "connect_4_board.json")) as f:  # giữ lại từ GitHub
+with open(os.path.join(BASE_DIR, "data", "levels", "connect_4_board.json")) as f: 
     connect4_board = json.load(f)
 
 SUDOKU_LEVEL = 7
-CONNECT_4_LEVEL = 8                                # giữ lại từ GitHub
+CONNECT_4_LEVEL = 8                       
 
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()
@@ -29,12 +29,12 @@ levels = [0, 1, 2, 3, 4, 5, 6, 7 ,8]
 for i in range(1, 9):
     lv, node = load_level(os.path.join(BASE_DIR, "data", "levels", f"level{i}.json"))
     s_board = sudoku_board if i == SUDOKU_LEVEL else None
-    c_board = connect4_board if i == CONNECT_4_LEVEL else None  # giữ lại từ GitHub
-    levels[i] = PlayScreen(lv, node, board_sudoku=s_board, board_connect4=c_board)  # giữ lại từ GitHub
+    c_board = connect4_board if i == CONNECT_4_LEVEL else None  
+    levels[i] = PlayScreen(lv, node, board_sudoku=s_board, board_connect4=c_board)
 
 level = 0
 current_screen = "start"
-and_or_screen = None                                # thêm từ code hiện tại
+and_or_screen = None                          
 
 running = True
 while running:
@@ -43,7 +43,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # màn and_or xử lý event trước
         if current_screen == "and_or":
             result = and_or_screen.handle_event(event)
             if result == "play":
@@ -77,7 +76,6 @@ while running:
                 and_or_screen = AndOrSolution(result[1])
                 current_screen = "and_or"
 
-    # update auto-step khi nhấn Run
     if current_screen == "and_or" and and_or_screen:
         and_or_screen.update()
 
