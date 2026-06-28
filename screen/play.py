@@ -7,6 +7,7 @@ from screen.failure import FailureScreen
 from screen.sudoku import Sudoku
 from screen.connect_4 import ConnectFour
 from screen.level_1_agent_mode import AIReplayScreen
+from screen.sensorless_screen import SensorlessReplayScreen
 
 CELL_SIZE = 80
 WIDTH, HEIGHT = 1000, 600
@@ -337,8 +338,8 @@ class PlayScreen:
                 self.is_resume = True
                 return
 
-            if self.level in (1, 2, 3, 6) and self.agent_button.collidepoint(event.pos):
-                if self.level in (1, 2, 3):
+            if self.level in (1, 2, 3, 5, 6) and self.agent_button.collidepoint(event.pos):
+                if self.level in (1, 2, 3, 5):
                     self._open_agent_mode()
                 else:
                     return ("and_or", self.start_node)
@@ -347,10 +348,11 @@ class PlayScreen:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.is_resume = True
-            elif event.key in (pygame.K_UP,    pygame.K_w): self.move('up')
-            elif event.key in (pygame.K_DOWN,  pygame.K_s): self.move('down')
-            elif event.key in (pygame.K_LEFT,  pygame.K_a): self.move('left')
-            elif event.key in (pygame.K_RIGHT, pygame.K_d): self.move('right')
+            elif self.level != 5:
+                if event.key in (pygame.K_UP,    pygame.K_w): self.move('up')
+                elif event.key in (pygame.K_DOWN,  pygame.K_s): self.move('down')
+                elif event.key in (pygame.K_LEFT,  pygame.K_a): self.move('left')
+                elif event.key in (pygame.K_RIGHT, pygame.K_d): self.move('right')
 
         return None
 
@@ -360,16 +362,19 @@ class PlayScreen:
         self.is_agent_mode = True
         start_map    = copy.deepcopy(self.start_node.state.map)
         start_energy = self.start_node.state.energy
+        if self.level == 5:
+            # MỞ MÀN HÌNH SENSORLESS
+            SensorlessReplayScreen(start_map, energy=start_energy).run()
+        else:
+            algo_map = {
+                1: ["BFS", "DFS", "UCS"],
+                2: ["Greedy", "A*", "IDA*"],
+                3: ["Hill Climbing", "Local Beam", "Simulated Annealing"],
+                4: ["Partial Observation"],
+            }
+            algo_names = algo_map.get(self.level, ["BFS", "DFS", "UCS"])
 
-        algo_map = {
-            1: ["BFS", "DFS", "UCS"],
-            2: ["Greedy", "A*", "IDA*"],
-            3: ["Hill Climbing", "Local Beam", "Simulated Annealing"],
-            4: ["Partial Observation"],
-        }
-        algo_names = algo_map.get(self.level, ["BFS", "DFS", "UCS"])
-
-        AIReplayScreen(start_map, energy=start_energy, algo_names=algo_names).run()
+            AIReplayScreen(start_map, energy=start_energy, algo_names=algo_names).run()
 
         # Restore lại kích thước màn hình gốc
         pygame.display.set_mode((WIDTH, HEIGHT))
@@ -421,10 +426,11 @@ class PlayScreen:
                 pygame.draw.rect(screen, (0, 0, 0), rect, 1)
 
         # Robot (player)
-        pr = (self.offset_x + self.node.state.y * CELL_SIZE,
-              self.offset_y + self.node.state.x * CELL_SIZE,
-              CELL_SIZE, CELL_SIZE)
-        draw_robot(screen, pr)
+        if self.level != 5:
+            pr = (self.offset_x + self.node.state.y * CELL_SIZE,
+                self.offset_y + self.node.state.x * CELL_SIZE,
+                CELL_SIZE, CELL_SIZE)
+            draw_robot(screen, pr)
 
         # Nút Resume
         pygame.draw.rect(screen, (60, 60, 80), self.resume_button, border_radius=8)
@@ -438,7 +444,7 @@ class PlayScreen:
                          (bx + bw//2 + 3, bar_y, bar_w, bar_h), border_radius=3)
 
         # Nút Agent Mode — level 1, 2, 3 và 6
-        if self.level in (1, 2, 3, 6):
+        if self.level in (1, 2, 3, 5, 6):
             pygame.draw.rect(screen, (70, 110, 220), self.agent_button, border_radius=8)
             pygame.draw.rect(screen, (230, 230, 255), self.agent_button, 2, border_radius=8)
             font_agent = pygame.font.SysFont(None, 30)
