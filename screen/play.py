@@ -363,10 +363,31 @@ class PlayScreen:
         start_map    = copy.deepcopy(self.start_node.state.map)
         start_energy = self.start_node.state.energy
 
-        # run() chặn cho đến khi cửa sổ agent đóng
-        AIReplayScreen(start_map, energy=start_energy).run()
+        # ── KIỂM TRA LEVEL VÀ CHỌN THUẬT TOÁN ──
+        if self.level == 1:
+            algos_for_this_level = ["BFS", "DFS", "UCS"]
+        elif self.level == 2:
+            algos_for_this_level = ["Greedy", "A*", "IDA*"]
+        elif self.level == 3:
+            algos_for_this_level = ["Hill Climbing", "Local Beam", "Simulated Annealing"]
+        elif self.level == 4:
+            algos_for_this_level = ["Minimax", "Alpha-Beta", "Expectimax"]
+        else:
+            # Giá trị mặc định cho các level khác chưa được cấu hình
+            algos_for_this_level = ["BFS", "DFS", "UCS"] 
 
-        # Sau khi run() trả về → ẩn đã xong, hiện lại PlayScreen
+        # Truyền danh sách thuật toán đã chọn vào AIReplayScreen
+        AIReplayScreen(
+            start_map, 
+            energy=start_energy, 
+            algo_names=algos_for_this_level
+        ).run()
+
+        # SAU KHI AGENT MODE ĐÓNG LẠI:
+        # 1. Phục hồi lại kích thước màn hình gốc của PlayScreen (1000x600)
+        pygame.display.set_mode((1000, 600)) 
+        
+        # 2. Bật lại cờ để vẽ PlayScreen
         self.is_agent_mode = False
 
     # ── reset / navigation ───────────────────────────────────────
@@ -396,28 +417,47 @@ class PlayScreen:
 
     def draw(self, screen):
         # Trong khi Agent Mode đang chạy, không vẽ gì cả
-        # (AIReplayScreen tự vẽ vào cùng surface hoặc cửa sổ riêng)
         if self.is_agent_mode:
             return
 
         # ── Nền ──
         screen.fill((30, 30, 40))
 
-        # ── Grid ──
+        # ==========================================
+        # PHẦN MỚI: TÍNH TOÁN KÍCH THƯỚC MAP ĐỘNG
+        # ==========================================
         game_map = self.node.state.map
-        for r in range(ROWS):
-            for c in range(COLS):
-                px   = OFFSET_X + c * CELL_SIZE
-                py   = OFFSET_Y + r * CELL_SIZE
-                rect = (px, py, CELL_SIZE, CELL_SIZE)
+        actual_rows = len(game_map)
+        actual_cols = len(game_map[0]) if actual_rows > 0 else 0
+
+        # Tự động thu nhỏ ô nếu map quá to (chừa 100px lề để không đè vào UI)
+        max_cell_w = (WIDTH - 100) // max(1, actual_cols)
+        max_cell_h = (HEIGHT - 100) // max(1, actual_rows)
+        
+        # Lấy kích thước ô nhỏ nhất để map không bị méo, giới hạn tối đa là 80
+        dyn_cell = min(80, max_cell_w, max_cell_h)
+
+        # Tính toán tọa độ bù (offset) để luôn căn giữa màn hình
+        grid_width  = actual_cols * dyn_cell
+        grid_height = actual_rows * dyn_cell
+        dyn_ox = (WIDTH - grid_width) // 2
+        dyn_oy = (HEIGHT - grid_height) // 2
+        # ==========================================
+
+        # ── Grid ──
+        for r in range(actual_rows):
+            for c in range(actual_cols):
+                px   = dyn_ox + c * dyn_cell
+                py   = dyn_oy + r * dyn_cell
+                rect = (px, py, dyn_cell, dyn_cell)
                 draw_cell(screen, rect, game_map[r][c])
                 # Viền lưới
                 pygame.draw.rect(screen, (0, 0, 0), rect, 1)
 
         # ── Robot (player) ──
-        pr = (OFFSET_X + self.node.state.y * CELL_SIZE,
-              OFFSET_Y + self.node.state.x * CELL_SIZE,
-              CELL_SIZE, CELL_SIZE)
+        pr = (dyn_ox + self.node.state.y * dyn_cell,
+              dyn_oy + self.node.state.x * dyn_cell,
+              dyn_cell, dyn_cell)
         draw_robot(screen, pr)
 
         # ── Nút Resume (icon ❚❚) ──

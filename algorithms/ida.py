@@ -1,4 +1,4 @@
-from helper import Node, State, generate_new_state, get_result_path, find_start_position
+from algorithms.helper import Node, State, generate_new_state, get_result_path, find_start_position
 
 def calculate_heuristic(state: State):
     for row in range(len(state.map)):

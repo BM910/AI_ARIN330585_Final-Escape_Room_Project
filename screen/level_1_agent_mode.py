@@ -7,7 +7,16 @@ import time
 from algorithms.breadth_first_search import bfs
 from algorithms.depth_first_search import dfs_version_2
 from algorithms.ucs import ucs
-# ── CONFIG ────────────────────────────────────────────────────────────────────
+
+from algorithms.greedy_search import greedy
+from algorithms.a_star import a_star
+from algorithms.ida import ida_star
+
+from algorithms.simple_hill_climbing import simple_hill_climbing
+from algorithms.local_beam import local_beam_search
+from algorithms.simulated_annealing import simulated_annealing
+
+
 WIDTH, HEIGHT = 1280, 760
 CELL          = 56
 
@@ -29,12 +38,19 @@ KEY_COLORS = {
 }
 
 # PHẦN NÀY THAY THUẬT TOÁN VÀO
-# ── ALGO REGISTRY  fn(map, energy) → list[Node] | None ───────────────────────
-ALGOS = {
+ALL_ALGOS = {
     "BFS": bfs,
     "DFS": dfs_version_2,
     "UCS": ucs,
+    "Greedy": greedy,
+    "A*": a_star,
+    "IDA*": ida_star,
+    "Hill Climbing": simple_hill_climbing,
+    "Local Beam": local_beam_search,
+    "Simulated Annealing": simulated_annealing
 }
+
+ALGOS = dict()
 
 # ── DRAW HELPERS ──────────────────────────────────────────────────────────────
 def _find_start(map_):
@@ -90,7 +106,7 @@ def draw_robot(surf, rect):
 # ── MAIN CLASS ────────────────────────────────────────────────────────────────
 class AIReplayScreen:
 
-    def __init__(self, start_map, energy=float('inf')):
+    def __init__(self, start_map, energy=float('inf'), algo_names=['', '', '']):
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Escape Room — AI Replay")
@@ -111,6 +127,13 @@ class AIReplayScreen:
         # Trạng thái hiển thị (reset được)
         self._reset_display()
 
+        ALGOS.clear()
+        for algo_name in algo_names:
+            ALGOS[algo_name] = ALL_ALGOS[algo_name]
+        
+        if not ALGOS:
+            return 
+        
         # Nút
         self.algo_btns = {}
         y = 70
@@ -355,7 +378,8 @@ class AIReplayScreen:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit(); return
+                    # XÓA lệnh pygame.quit() đi, chỉ cần return để thoát vòng lặp
+                    return
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.handle_click(event.pos)
             self.update()
