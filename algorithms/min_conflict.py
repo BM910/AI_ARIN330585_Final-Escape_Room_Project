@@ -104,4 +104,4 @@ def min_conflict(board, log=None):
 
             if log is not None and step % 100 == 0:
                 log.append(f"Step {step:5d} | set ({r},{c}) = {chosen} | remaining conflicts={current_conflict_count}")
-                time.sleep(0.0005)
+                time.sleep(0.01)
