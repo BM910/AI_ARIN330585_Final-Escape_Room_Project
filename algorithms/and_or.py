@@ -1,42 +1,56 @@
-from helper import Node, generate_new_state
+from data.Node import Node
+from data.State import generate_new_state
 
 def and_or_search(start_state):
     node = Node(start_state, parent=None, action=None, cost=0)
-    return or_search(node, [])
+    return or_search(node.state, [])
 
-def or_search(node, path):
-    if node.state.is_at_goal():
+def or_search(state, path):
+    if state.is_at_goal():
         return []
     
-    if node.state.get_tuple_representation() in path:
+    if state.get_tuple_no_energy() in path:
         return 'failure'
     
-    for action in node.state.get_moves():
-        result = generate_new_state(node.state, action)
+    # Đang đứng trên '+' → thu thập plan cho tất cả action
+    if state.map[state.x][state.y] == '+':
+        all_plans = {}
+        for action in state.get_moves():
+            result_states = generate_new_state(state, action)
+            if result_states is None:
+                continue
+            plan = and_search(result_states, path + [state.get_tuple_no_energy()])
+            if plan != 'failure':
+                all_plans[action] = plan
+        return all_plans if all_plans else 'failure'
 
-        plan = and_search(result, node, path + [node.state.get_tuple_representation])
-
+    # Bình thường → dừng sớm khi tìm được plan
+    for action in state.get_moves():
+        result_states = generate_new_state(state, action)
+        if result_states is None:
+            continue
+        plan = and_search(result_states, path + [state.get_tuple_no_energy()])
         if plan != 'failure':
             return [action, plan]
         
     return 'failure'
     
-def and_search(result, parent_node, path):
-    states = result if isinstance(result, list) else [result]
+def and_search(states, path):
+    # states là list (AND node) hoặc 1 state (deterministic)
+    if not isinstance(states, list):
+        states = [states]
 
     plans = {}
     for s in states:
-        child_node = Node(s, parent=parent_node, action=None, cost=0)
-        plan_s = or_search(child_node, path)
+        plan_s = or_search(s, path)
 
         if plan_s == 'failure':
             return 'failure'
 
-        plans[s.get_tuple_representation()] = plan_s
+        plans[s.get_tuple_no_energy()] = plan_s
 
-    # Deterministic → trả về plan trực tiếp thay vì dict 1 phần tử
-    if not isinstance(result, list):
-        return plans[result.get_tuple_representation()]
+    # Deterministic → trả về plan trực tiếp
+    if len(states) == 1:
+        return plans[states[0].get_tuple_no_energy()]
 
     return plans
-
