@@ -20,8 +20,8 @@ with open(os.path.join(BASE_DIR, "data", "levels", "sudoku_board.json")) as f:
 with open(os.path.join(BASE_DIR, "data", "levels", "connect_4_board.json")) as f:  # giữ lại từ GitHub
     connect4_board = json.load(f)
 
-SUDOKU_LEVEL = 5
-CONNECT_4_LEVEL = 6                                 # giữ lại từ GitHub
+SUDOKU_LEVEL = 7
+CONNECT_4_LEVEL = 8                                # giữ lại từ GitHub
 
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()

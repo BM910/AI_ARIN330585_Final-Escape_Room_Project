@@ -337,7 +337,7 @@ class PlayScreen:
                 self.is_resume = True
                 return
 
-            if self.level in (1, 2, 3, 4) and self.agent_button.collidepoint(event.pos):
+            if self.level in (1, 2, 3, 6) and self.agent_button.collidepoint(event.pos):
                 self._open_agent_mode()
                 return
 
@@ -434,8 +434,8 @@ class PlayScreen:
         pygame.draw.rect(screen, (230, 230, 230),
                          (bx + bw//2 + 3, bar_y, bar_w, bar_h), border_radius=3)
 
-        # Nút Agent Mode — level 1, 2, 3 và 4
-        if self.level in (1, 2, 3, 4):
+        # Nút Agent Mode — level 1, 2, 3 và 6
+        if self.level in (1, 2, 3, 6):
             pygame.draw.rect(screen, (70, 110, 220), self.agent_button, border_radius=8)
             pygame.draw.rect(screen, (230, 230, 255), self.agent_button, 2, border_radius=8)
             font_agent = pygame.font.SysFont(None, 30)

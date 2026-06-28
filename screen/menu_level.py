@@ -11,12 +11,12 @@ class LevelScreen:
         gap_x = 40        
         gap_y = 30        
         
-        start_x = self.popup.x + 50  
+        start_x = self.popup.x + 20  
         start_y = self.popup.y + 100 
 
-        for i in range(6):
-            row = i // 3  
-            col = i % 3   
+        for i in range(8):
+            row = i // 4  
+            col = i % 4   
             x = start_x + col * (button_size + gap_x)
             y = start_y + row * (button_size + gap_y)
             self.level_buttons.append(pygame.Rect(x, y, button_size, button_size))
