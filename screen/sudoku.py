@@ -1,6 +1,7 @@
 import pygame 
 import copy
 import threading
+import time
 from algorithms.backtracking_and_ac_3 import backtracking_and_ac_3_search
 from algorithms.min_conflict import min_conflict
 from algorithms.backtracking_and_forwardcheck import backtracking_forwardcheck_search
@@ -49,6 +50,7 @@ FONT_MONO   = ("consolas", 12)
 # Status
 STATUS_OK_COL   = (50,  160, 80)
 STATUS_FAIL_COL = (160, 80,  80)
+TIMER_COL       = (200, 160, 60)
 
 
 class Sudoku:
@@ -67,10 +69,12 @@ class Sudoku:
         self.log       = []
 
         self.selected_algo = None  # "mc", "ac3", "fc"
-        self.is_solving = False
+        self.is_solving    = False
         self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
-        self.log_scroll = 0  # 0 = cuối cùng
+        self.log_scroll    = 0
+        self._solve_start  = 0.0   # time.perf_counter() lúc bắt đầu
+        self._last_elapsed = None  # float ms sau khi xong, None nếu chưa chạy
 
     def is_goal(self):
         board = self.board
@@ -97,14 +101,16 @@ class Sudoku:
                     return False
 
         return True
-    
+
     def reset(self):
-        self.board      = copy.deepcopy(self.start_board)
-        self.is_resume  = False
-        self.is_solving = False
+        self.board         = copy.deepcopy(self.start_board)
+        self.is_resume     = False
+        self.is_solving    = False
         self.selected_algo = None
-        self.log        = []
-        self.log_scroll = 0
+        self.log           = []
+        self.log_scroll    = 0
+        self._solve_start  = 0.0
+        self._last_elapsed = None
 
     def return_game(self):
         self.is_resume = False
@@ -192,12 +198,27 @@ class Sudoku:
         else:
             self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
-        status_y = HEIGHT - 48
-        if self.is_goal():
-            s = font_btn.render("Da giai!", True, STATUS_OK_COL)
+        # ── ĐỒNG HỒ / THỜI GIAN KẾT QUẢ ────────────────────────
+        if self.is_solving:
+            # Đang chạy: đếm lên
+            elapsed = time.perf_counter() - self._solve_start
+            timer_str = f"{elapsed:.2f}s" if elapsed < 60 else f"{int(elapsed//60)}m {elapsed%60:.1f}s"
+            t = font_btn.render(timer_str, True, TIMER_COL)
+            screen.blit(t, t.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 64))
         else:
-            s = font_btn.render("Chua giai...", True, STATUS_FAIL_COL)
-        screen.blit(s, s.get_rect(centerx=PANEL_W // 2, y=status_y))
+            # Đã xong: hiện thời gian kết quả cố định phía trên status
+            if self._last_elapsed is not None:
+                ms = self._last_elapsed
+                time_str = f"{ms/1000:.2f}s" if ms >= 1000 else f"{ms:.1f}ms"
+                t = font_btn.render(time_str, True, TIMER_COL)
+                screen.blit(t, t.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 64))
+
+            # Status Da giai / Chua giai
+            if self.is_goal():
+                s = font_btn.render("Da giai!", True, STATUS_OK_COL)
+            else:
+                s = font_btn.render("Chua giai...", True, STATUS_FAIL_COL)
+            screen.blit(s, s.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 44))
 
         # ── 3. PANEL PHẢI (LOG TERMINAL) ─────────────────────────
         log_x    = GRID_X + GRID_SIZE + 20
@@ -288,8 +309,11 @@ class Sudoku:
                     self.log.append("! Chua chon thuat toan")
                 elif not self.is_solving:
                     algo = self.selected_algo
-                    self.is_solving = True
+                    self.is_solving    = True
+                    self._solve_start  = time.perf_counter()
+
                     def run():
+                        t0 = time.perf_counter()
                         if algo == "mc":
                             self.log.append("--- Min-Conflict ---")
                             result = min_conflict(self.board, self.log)
@@ -299,11 +323,18 @@ class Sudoku:
                         elif algo == "fc":
                             self.log.append("--- Forward Check ---")
                             result = backtracking_forwardcheck_search(self.board, self.log)
+
+                        elapsed_ms = (time.perf_counter() - t0) * 1000
+                        self._last_elapsed = elapsed_ms
                         if result:
                             self.board = result
+                            self.log.append(f"Xong! {elapsed_ms:.1f} ms")
+                        else:
+                            self.log.append(f"! That bai. {elapsed_ms:.1f} ms")
                         self.is_solving = False
+
                     threading.Thread(target=run, daemon=True).start()
-            
+
             elif self.confirm_button.collidepoint(event.pos):
                 if self.is_goal() and not self.is_solving:
                     return "solved"
