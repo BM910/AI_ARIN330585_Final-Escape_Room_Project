@@ -338,7 +338,10 @@ class PlayScreen:
                 return
 
             if self.level in (1, 2, 3, 6) and self.agent_button.collidepoint(event.pos):
-                self._open_agent_mode()
+                if self.level in (1, 2, 3):
+                    self._open_agent_mode()
+                else:
+                    return ("and_or", self.start_node)
                 return
 
         if event.type == pygame.KEYDOWN:
