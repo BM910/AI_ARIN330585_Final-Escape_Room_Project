@@ -26,7 +26,7 @@ CONNECT_4_LEVEL = 8                                # giữ lại từ GitHub
 start_screen = StartScreen()
 menu_level_screen = LevelScreen()
 levels = [0, 1, 2, 3, 4, 5, 6, 7 ,8]
-for i in range(1, 7):
+for i in range(1, 9):
     lv, node = load_level(os.path.join(BASE_DIR, "data", "levels", f"level{i}.json"))
     s_board = sudoku_board if i == SUDOKU_LEVEL else None
     c_board = connect4_board if i == CONNECT_4_LEVEL else None  # giữ lại từ GitHub
