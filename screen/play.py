@@ -360,7 +360,19 @@ class PlayScreen:
         self.is_agent_mode = True
         start_map    = copy.deepcopy(self.start_node.state.map)
         start_energy = self.start_node.state.energy
-        AIReplayScreen(start_map, energy=start_energy).run()
+
+        algo_map = {
+            1: ["BFS", "DFS", "UCS"],
+            2: ["Greedy", "A*", "IDA*"],
+            3: ["Hill Climbing", "Local Beam", "Simulated Annealing"],
+        }
+        algo_names = algo_map.get(self.level, ["BFS", "DFS", "UCS"])
+
+        AIReplayScreen(start_map, energy=start_energy, algo_names=algo_names).run()
+
+        # Restore lại kích thước màn hình gốc
+        pygame.display.set_mode((WIDTH, HEIGHT))
+
         self.is_agent_mode = False
 
     # ── reset / navigation ────────────────────────────────────────

@@ -7,6 +7,12 @@ import time
 from algorithms.breadth_first_search import bfs
 from algorithms.depth_first_search import dfs_version_2
 from algorithms.ucs import ucs
+from algorithms.greedy_search import greedy
+from algorithms.a_star import a_star
+from algorithms.ida import ida_star
+from algorithms.simple_hill_climbing import simple_hill_climbing
+from algorithms.local_beam import local_beam_search
+from algorithms.simulated_annealing import simulated_annealing
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
 WIDTH, HEIGHT = 1280, 760
@@ -29,13 +35,19 @@ KEY_COLORS = {
     'd': (255, 100, 255),
 }
 
-# PHẦN NÀY THAY THUẬT TOÁN VÀO
-# ── ALGO REGISTRY  fn(map, energy) → list[Node] | None ───────────────────────
-ALGOS = {
-    "BFS": bfs,
-    "DFS": dfs_version_2,
-    "UCS": ucs,
+ALL_ALGOS = {
+    "BFS":                 bfs,
+    "DFS":                 dfs_version_2,
+    "UCS":                 ucs,
+    "Greedy":              greedy,
+    "A*":                  a_star,
+    "IDA*":                ida_star,
+    "Hill Climbing":       simple_hill_climbing,
+    "Local Beam":          local_beam_search,
+    "Simulated Annealing": simulated_annealing,
 }
+
+ALGOS = dict()
 
 # ── DRAW HELPERS ──────────────────────────────────────────────────────────────
 def _find_start(map_):
@@ -48,9 +60,9 @@ def draw_brick(surf, rect):
     pygame.draw.rect(surf, (100, 50, 40), rect)
     pygame.draw.rect(surf, (60,  30, 25), rect, 2)
     x, y, w, h = rect
-    pygame.draw.line(surf, (40,20,15), (x,      y+h//2), (x+w,    y+h//2), 2)
-    pygame.draw.line(surf, (40,20,15), (x+w//3, y),      (x+w//3, y+h//2), 2)
-    pygame.draw.line(surf, (40,20,15), (x+w*2//3, y+h//2),(x+w*2//3, y+h), 2)
+    pygame.draw.line(surf, (40,20,15), (x,        y+h//2),  (x+w,      y+h//2), 2)
+    pygame.draw.line(surf, (40,20,15), (x+w//3,   y),       (x+w//3,   y+h//2), 2)
+    pygame.draw.line(surf, (40,20,15), (x+w*2//3, y+h//2),  (x+w*2//3, y+h),    2)
 
 def draw_door(surf, rect, ch):
     col = KEY_COLORS.get(ch.lower(), (150,150,150))
@@ -71,9 +83,9 @@ def draw_key(surf, rect, ch):
     x, y, w, h = rect
     cx, cy = x+w//2, y+h//2
     pygame.draw.circle(surf, col, (cx-10, cy-10), 8, 3)
-    pygame.draw.line(surf, col, (cx-4, cy-4),   (cx+12, cy+12), 3)
-    pygame.draw.line(surf, col, (cx+6, cy+6),   (cx+10, cy+2),  3)
-    pygame.draw.line(surf, col, (cx+10, cy+10), (cx+14, cy+6),  3)
+    pygame.draw.line(surf, col, (cx-4,  cy-4),   (cx+12, cy+12), 3)
+    pygame.draw.line(surf, col, (cx+6,  cy+6),   (cx+10, cy+2),  3)
+    pygame.draw.line(surf, col, (cx+10, cy+10),  (cx+14, cy+6),  3)
     f = pygame.font.SysFont("courier", 16, bold=True)
     surf.blit(f.render(ch, True, (255,255,255)), (x+5, y+5))
 
@@ -91,7 +103,7 @@ def draw_robot(surf, rect):
 # ── MAIN CLASS ────────────────────────────────────────────────────────────────
 class AIReplayScreen:
 
-    def __init__(self, start_map, energy=float('inf')):
+    def __init__(self, start_map, energy=float('inf'), algo_names=['', '', '']):
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Escape Room — AI Replay")
@@ -101,7 +113,6 @@ class AIReplayScreen:
         self.fm  = pygame.font.SysFont("courier", 15, bold=True)
         self.fv  = pygame.font.SysFont("impact",  22)
 
-        # Dữ liệu gốc — KHÔNG bao giờ thay đổi
         self.start_map    = copy.deepcopy(start_map)
         self.start_energy = energy
         self.rows = len(start_map)
@@ -109,27 +120,32 @@ class AIReplayScreen:
         self.ox   = PANEL_CENTER.x + (PANEL_CENTER.width  - self.cols * CELL) // 2
         self.oy   = PANEL_CENTER.y + (PANEL_CENTER.height - self.rows * CELL) // 2
 
-        # Trạng thái hiển thị (reset được)
         self._reset_display()
 
-        # Nút
+        ALGOS.clear()
+        for algo_name in algo_names:
+            if algo_name in ALL_ALGOS:
+                ALGOS[algo_name] = ALL_ALGOS[algo_name]
+
+        if not ALGOS:
+            return
+
         self.algo_btns = {}
         y = 70
         for name in ALGOS:
             self.algo_btns[name] = pygame.Rect(20, y, 180, 44)
             y += 56
         y += 10
-        self.btn_run    = pygame.Rect(20, y,       180, 44); y += 54
-        self.btn_reset  = pygame.Rect(20, y,       180, 44); y += 54
-        self.btn_spdup  = pygame.Rect(20, y,        86, 38)
-        self.btn_spddn  = pygame.Rect(114, y,       86, 38); y += 48
-        self.btn_step   = pygame.Rect(20, y,       180, 38)
+        self.btn_run   = pygame.Rect(20,  y, 180, 44); y += 54
+        self.btn_reset = pygame.Rect(20,  y, 180, 44); y += 54
+        self.btn_spdup = pygame.Rect(20,  y,  86, 38)
+        self.btn_spddn = pygame.Rect(114, y,  86, 38); y += 48
+        self.btn_step  = pygame.Rect(20,  y, 180, 38)
 
-        self.selected = list(ALGOS.keys())[0]
+        self.selected   = list(ALGOS.keys())[0]
         self.is_solving = False
 
     def _reset_display(self):
-        """Về trạng thái ban đầu: robot tại 'S', map gốc, không có path."""
         sx, sy        = _find_start(self.start_map)
         self.cur_map  = copy.deepcopy(self.start_map)
         self.cur_x    = sx
@@ -137,13 +153,13 @@ class AIReplayScreen:
         self.cur_e    = self.start_energy
         self.cur_keys = set()
 
-        self.path_nodes   = []
-        self.step_idx     = 0
-        self.is_playing   = False
-        self.last_tick    = 0
-        self.delay        = 320
-        self.logs         = ["Đã sẵn sàng."]
-        self.result_str   = "Hiện chưa có kết quả."
+        self.path_nodes = []
+        self.step_idx   = 0
+        self.is_playing = False
+        self.last_tick  = 0
+        self.delay      = 320
+        self.logs       = ["Đã sẵn sàng."]
+        self.result_str = "Hiện chưa có kết quả."
 
     # ── algorithm ─────────────────────────────────────────────────────────────
 
@@ -192,8 +208,8 @@ class AIReplayScreen:
             return
         node = self.path_nodes[self.step_idx]
         self._apply_node(node)
-        act = getattr(node, "action", None)
-        keys = [str(k) for k in self.cur_keys if k]
+        act      = getattr(node, "action", None)
+        keys     = [str(k) for k in self.cur_keys if k]
         str_keys = ", ".join(keys) or " "
         self.logs.append(
             f"Bước {self.step_idx:02d}. {str(act) if act else 'START':<8}, E={self.cur_e}, K=[{str_keys}]")
@@ -250,7 +266,6 @@ class AIReplayScreen:
             pygame.draw.rect(self.screen, PBG, p)
             pygame.draw.rect(self.screen, BDR, p, 2)
 
-        # ── Panel trái ────────────────────────────────────────────
         self.screen.blit(self.ft.render("ALGORITHMS", True, TXT), (20, 20))
         for name, rect in self.algo_btns.items():
             sel = name == self.selected
@@ -259,7 +274,6 @@ class AIReplayScreen:
                       (10,20,10)   if sel else (220,220,220),
                       font=self.fm)
 
-        # RUN / PAUSE / SOLVING
         if self.is_solving:
             run_bg, run_lbl = (130,110,40), "SOLVING..."
         elif self.is_playing:
@@ -285,7 +299,6 @@ class AIReplayScreen:
             f"Step: {self.step_idx}/{total}" if total else "Step: -/-",
             True, (160,200,160)), (20, self.btn_step.bottom + 8))
 
-        # ── Map ───────────────────────────────────────────────────
         for r in range(self.rows):
             for c in range(self.cols):
                 self._draw_cell(self.ox + c*CELL, self.oy + r*CELL,
@@ -299,7 +312,6 @@ class AIReplayScreen:
         self.screen.blit(self.fm.render(hud, True, (255,200,50)),
                          (PANEL_CENTER.x + 16, 12))
 
-        # ── Log ───────────────────────────────────────────────────
         self.screen.blit(self.ft.render("TERMINAL LOG", True, TXT),
                          (PANEL_RIGHT.x + 12, 18))
         ly = 54
@@ -311,7 +323,6 @@ class AIReplayScreen:
                              (PANEL_RIGHT.x + 8, ly))
             ly += 22
 
-        # ── Path bar ──────────────────────────────────────────────
         by = PANEL_BOTTOM.y
         self.screen.blit(self.ft.render("PATH:", True, (255,100,100)), (16, by+14))
         res = self.result_str[:185] if len(self.result_str) > 185 else self.result_str
@@ -356,7 +367,7 @@ class AIReplayScreen:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit(); return
+                    return
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.handle_click(event.pos)
             self.update()
