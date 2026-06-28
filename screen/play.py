@@ -8,7 +8,7 @@ from screen.sudoku import Sudoku
 from screen.connect_4 import ConnectFour
 from screen.level_1_agent_mode import AIReplayScreen
 from screen.sensorless_screen import SensorlessReplayScreen
-from screen.draw_helpers import draw_cell, draw_robot   # ← tất cả hàm vẽ
+from screen.draw_helpers import draw_cell, draw_robot, draw_key_bar
 
 CELL_SIZE     = 80
 WIDTH, HEIGHT = 1000, 600
@@ -306,13 +306,18 @@ class PlayScreen:
             agent_text = font_agent.render("Agent Mode", True, (255, 255, 255))
             screen.blit(agent_text, agent_text.get_rect(center=self.agent_button.center))
 
-        # Info bar
-        font_info = pygame.font.SysFont(None, 28)
-        keys_str  = ', '.join(sorted(self.node.state.keys)) if self.node.state.keys else '—'
-        info = font_info.render(
-            f"Energy: {self.node.state.energy}    Keys: {keys_str}",
+        # Info bar — Energy text + icon chìa khóa
+        font_info   = pygame.font.SysFont(None, 28)
+        energy_surf = font_info.render(
+            f"Energy: {self.node.state.energy}    Keys: ",
             True, (230, 230, 230))
-        screen.blit(info, (20, 20))
+        screen.blit(energy_surf, (20, 20))
+        if self.node.state.keys:
+            draw_key_bar(screen, self.node.state.keys,
+                         x=20 + energy_surf.get_width(), y=10, size=28)
+        else:
+            none_surf = font_info.render("—", True, (230, 230, 230))
+            screen.blit(none_surf, (20 + energy_surf.get_width(), 20))
 
         # Overlays
         if self.is_connect4:

@@ -32,12 +32,35 @@ def draw_door(surf, rect, ch):
     col = KEY_COLORS.get(ch.lower(), (150, 150, 150))
     x, y, w, h = rect
     pygame.draw.rect(surf, (40, 40, 40), rect)
-    pygame.draw.rect(surf, col, (x+8, y+15, w-16, h-15))
-    pygame.draw.circle(surf, col, (x+w//2, y+15), max(1, (w-16)//2))
-    pygame.draw.circle(surf, (20, 20, 20), (x+w//2, y+h//2+5), max(1, w//16))
-    f = pygame.font.SysFont("courier", max(10, w//4), bold=True)
-    t = f.render(ch.upper(), True, (255, 255, 255))
-    surf.blit(t, t.get_rect(center=(x+w//2, y+10)))
+
+    dw  = int(w * 0.50)
+    dh  = int(h * 0.55)
+    dx  = x + (w - dw) // 2
+    dy  = y + int(h * 0.20)
+    r   = dw // 2
+
+    # Thân chữ nhật
+    pygame.draw.rect(surf, col, (dx, dy + r, dw, dh))
+
+    # Vòm — chỉ vẽ nửa trên bằng polygon hình bán nguyệt
+    import math
+    arc_pts = [(dx + r + int(r * math.cos(math.radians(a))),
+                dy + r + int(r * math.sin(math.radians(a))))
+               for a in range(180, 361, 5)]
+    pygame.draw.polygon(surf, col, arc_pts)
+
+    # Viền 3 cạnh thân (bỏ cạnh trên tiếp xúc vòm)
+    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r),          (dx, dy + r + dh),      2)  # trái
+    pygame.draw.line(surf, (20, 20, 20), (dx, dy + r + dh),     (dx + dw, dy + r + dh), 2)  # dưới
+    pygame.draw.line(surf, (20, 20, 20), (dx + dw, dy + r + dh),(dx + dw, dy + r),      2)  # phải
+    pygame.draw.arc(surf, (20, 20, 20),
+                    (dx, dy, dw, dw), math.radians(0), math.radians(180), 2)
+
+    # Tay nắm bên trái
+    kx = dx + int(dw * 0.30)
+    ky = dy + r + int(dh * 0.50)
+    pygame.draw.circle(surf, (20, 20, 20), (kx, ky), max(2, w // 18))
+
 
 
 def draw_key(surf, rect, ch):
@@ -50,8 +73,7 @@ def draw_key(surf, rect, ch):
     pygame.draw.line(surf, col, (cx-r//2, cy-r//2), (cx+r*2, cy+r*2), max(1, r//3))
     pygame.draw.line(surf, col, (cx+r,    cy+r),    (cx+r*2, cy),     max(1, r//3))
     pygame.draw.line(surf, col, (cx+r*2,  cy+r*2),  (cx+r*3, cy+r),   max(1, r//3))
-    f = pygame.font.SysFont("courier", max(10, w//4), bold=True)
-    surf.blit(f.render(ch, True, (255, 255, 255)), (x+3, y+3))
+
 
 
 def draw_energy(surf, rect, value):
@@ -121,51 +143,17 @@ def draw_random_tile(surf, rect):
     pygame.draw.rect(surf, (60, 20, 90), rect)
     cx, cy = x + w // 2, y + h // 2
 
-    # Tỉ lệ theo kích thước ô — giữ toàn bộ hình trong rect
-    arm   = int(w * 0.30)   # độ dài cánh tay tính từ tâm
-    shaft = int(w * 0.10)   # nửa độ rộng thân
-    head  = int(w * 0.16)   # nửa độ rộng đầu mũi tên
-    tip   = int(w * 0.05)   # khoảng thụt vào ở góc đầu mũi tên
-
+    arm   = int(w * 0.30)
+    shaft = int(w * 0.10)
+    head  = int(w * 0.16)
+    tip   = int(w * 0.05)
     COL   = (255, 109, 0)   # cam đậm
 
-    def arrow_up():
-        return [
-            (cx - shaft, cy - tip),
-            (cx - shaft, cy + arm - tip),
-            (cx + shaft, cy + arm - tip),
-            (cx + shaft, cy - tip),
-        ]
+    # Thân thập tự
+    pygame.draw.rect(surf, COL, (cx - shaft, cy - arm, shaft*2, arm*2))
+    pygame.draw.rect(surf, COL, (cx - arm, cy - shaft, arm*2, shaft*2))
 
-    def arrow_down():
-        return [
-            (cx - shaft, cy + tip),
-            (cx - shaft, cy - arm + tip),
-            (cx + shaft, cy - arm + tip),
-            (cx + shaft, cy + tip),
-        ]
-
-    def arrow_left():
-        return [
-            (cx + tip,        cy - shaft),
-            (cx - arm + tip,  cy - shaft),
-            (cx - arm + tip,  cy + shaft),
-            (cx + tip,        cy + shaft),
-        ]
-
-    def arrow_right():
-        return [
-            (cx - tip,        cy - shaft),
-            (cx + arm - tip,  cy - shaft),
-            (cx + arm - tip,  cy + shaft),
-            (cx - tip,        cy + shaft),
-        ]
-
-    # Thân thập tự (4 hình chữ nhật gộp lại thành hình +)
-    pygame.draw.rect(surf, COL, (cx - shaft, cy - arm, shaft*2, arm*2))  # dọc
-    pygame.draw.rect(surf, COL, (cx - arm, cy - shaft, arm*2, shaft*2))  # ngang
-
-    # Đầu mũi tên — UP
+    # Đầu mũi tên UP
     pygame.draw.polygon(surf, COL, [
         (cx,        cy - arm - head),
         (cx - head, cy - arm + tip),
@@ -201,6 +189,51 @@ def draw_robot(surf, rect):
     pygame.draw.rect(surf, (200, 220, 240), (cx-a*2, cy-a*3, a*4, a*2),   border_radius=2)
     pygame.draw.circle(surf, (255, 50, 100), (cx-a,  cy-a*2), max(1, a//2))
     pygame.draw.circle(surf, (255, 50, 100), (cx+a,  cy-a*2), max(1, a//2))
+
+
+# ── KEY BAR INDICATOR ───────────────────────────────────────────────
+
+def draw_key_bar(surf, keys, x, y, size=28):
+    """Vẽ icon chìa khóa nhỏ cho mỗi key đang giữ.
+    keys : set of str, vd {'a', 'b'}
+    x, y : góc trên trái bắt đầu vẽ
+    size : kích thước mỗi icon (px)
+    Trả về x tiếp theo sau icon cuối cùng.
+    """
+    if not keys:
+        return x
+
+    gap = 6
+    for ch in sorted(keys):
+        col = KEY_COLORS.get(ch.lower(), (255, 215, 0))
+        cx, cy = x + size//2, y + size//2
+
+        # Nền tròn
+        pygame.draw.circle(surf, (40, 40, 50), (cx, cy), size//2)
+        pygame.draw.circle(surf, col,           (cx, cy), size//2, 2)
+
+        # Hình chìa khóa thu nhỏ
+        r  = max(3, size // 7)
+        lw = max(1, size // 14)
+        pygame.draw.circle(surf, col, (cx - r, cy - r), r, lw)
+        pygame.draw.line(surf, col,
+                         (cx - r + r//2, cy - r + r//2),
+                         (cx + r*2,      cy + r*2), lw + 1)
+        pygame.draw.line(surf, col,
+                         (cx + r,   cy + r),
+                         (cx + r*2, cy),      lw + 1)
+        pygame.draw.line(surf, col,
+                         (cx + r*2, cy + r*2),
+                         (cx + r*3, cy + r),  lw + 1)
+
+        # Chữ cái nhỏ ở góc dưới trái
+        f = pygame.font.SysFont("courier", max(8, size // 3), bold=True)
+        t = f.render(ch.upper(), True, col)
+        surf.blit(t, (x + 2, y + size - size//3 - 2))
+
+        x += size + gap
+
+    return x
 
 
 # ── UNIFIED CELL DISPATCHER ─────────────────────────────────────────
