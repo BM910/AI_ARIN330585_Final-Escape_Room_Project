@@ -4,7 +4,7 @@ import json
 from screen.start import StartScreen
 from screen.menu_level import LevelScreen
 from screen.play import PlayScreen
-from screen.solution.and_or_solution import AndOrSolution   # thêm từ code hiện tại
+from screen.and_or_solution import AndOrSolution   # thêm từ code hiện tại
 from data.levels.Load_level import load_level
 
 pygame.init()
