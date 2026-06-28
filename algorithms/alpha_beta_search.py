@@ -109,7 +109,7 @@ def generate_next_states(board, turn):
 
 def alpha_beta_search(board):
     turn = get_next_turn(board)
-    max_depth = 7
+    max_depth = 5
 
     if turn is None:
         return None

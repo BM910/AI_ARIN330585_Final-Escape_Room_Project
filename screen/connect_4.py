@@ -443,7 +443,7 @@ class ConnectFour:
         threading.Thread(target=self._enemy_worker, daemon=True).start()
 
     def _enemy_worker(self):
-        time.sleep(0.8)
+        time.sleep(0.5)
         _, col = random_search(self.board)
         if col is None: return
         move_num = sum(c != 0 for row in self.board for c in row) + 1
