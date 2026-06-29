@@ -63,7 +63,10 @@ class State:
         flat_map = tuple(tuple(row) for row in self.map)
         return (self.x, self.y, self.energy, tuple(sorted(list(self.keys))), flat_map)
         
-
+    def get_tuple_no_energy(self):
+        flat_map = tuple(tuple(row) for row in self.map)
+        return (self.x, self.y, tuple(sorted(list(self.keys))), flat_map)
+    
 class Node:
     def __init__(self, state, parent, action, cost):
         self.state = state
