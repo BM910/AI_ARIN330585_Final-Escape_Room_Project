@@ -70,7 +70,7 @@ screen/
 ```
 
 ### 3. data/
-Phụ trợ cho giao diện tổng thể, xây dựng `icons/` chứa các icon và `levels/` chứ đầu vào mỗi level dưới dạng các file **.json** để đồng bộ và mở rộng dễ dàng.
+Phụ trợ cho giao diện tổng thể, xây dựng `icons/` chứa các icon và `levels/` chứa đầu vào mỗi level dưới dạng các file **.json** để đồng bộ và mở rộng dễ dàng.
 
 ---
 
@@ -133,10 +133,10 @@ Các thuật toán trong nhóm này cài đặt h(n) = Khoảng cách Manhattan 
 ### 5. Tìm kiếm thỏa mãn ràng buộc (CSP)
 Các thuật toán này được áp dụng để giải Thử thách **Sudoku** trên đường Agent di chuyển.
 - **Forward Checking Search**: Xây dựng thuật toán Forward Checking cho Sudoku, là biến thể của Backtrack bằng việc giảm domain của các biến chưa gán nhãn.
-- **AC-3 + Backtracking**:  Xây dựng thuật toán Ac-3 giúp thu hẹp domain dựa vào ràng buộc cung và dùng Domain kết quả thu được cho Sudoku bằng thuật toán Bactracking.
+- **AC-3 + Backtracking**:  Xây dựng thuật toán Ac-3 giúp thu hẹp domain dựa vào ràng buộc cung và dùng Domain kết quả thu được cho Sudoku bằng thuật toán Backtracking.
 - **Min-conflicts**: Xây dựng thuật toán Min-conflicts cho Sudoku, với max_steps được truyền vào.
 
-**6. Tìm kiếm đối kháng (Adversarial search)** 
+### 6. Tìm kiếm đối kháng (Adversarial search)
 Các thuật toán này được áp dụng để giải Thử thách **Connect-4** trên đường Agent di chuyển.
 - **Minimax Search**: Xây dựng thuật toán Minimax Search tìm bước đi tối ưu bằng cách giả định đối thủ luôn đi nước cờ tốt nhất.
 - **Alpha-Beta Search**: Xây dựng thuật toán Alpha-Beta Search giống như Minimax nhưng có thêm điều kiện cắt tỉa.
