@@ -14,7 +14,7 @@ def generate_belief_states(map):
 
     for x in range(rows):
         for y in range(cols):
-            if map[x][y] == '.':
+            if map[x][y] != '#' and not map[x][y].isupper():
                 belief_state_set.append(State(map=copy.deepcopy(map), x=x, y=y, energy=float('inf'), keys=set()))
 
     return belief_state_set

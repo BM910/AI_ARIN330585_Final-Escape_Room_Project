@@ -1,5 +1,5 @@
 from collections import deque
-
+import time
 
 def get_csp(matrix):
     vars = []
@@ -122,7 +122,6 @@ def backtrack(vars, domain, assignment, matrix, log=None):
             if log is not None:
                 log.append(f"  Đặt ({r},{c})={value}")
 
-            import time
             time.sleep(0.01)
 
             result = backtrack(vars, domain, assignment, matrix, log)
