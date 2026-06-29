@@ -66,6 +66,7 @@ class Sudoku:
         self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
         self.log_scroll    = 0
+        self.log_scroll_x  = 0
         self._solve_start  = 0.0  
         self._last_elapsed = None 
 
@@ -102,6 +103,7 @@ class Sudoku:
         self.selected_algo = None
         self.log           = []
         self.log_scroll    = 0
+        self.log_scroll_x  = 0
         self._solve_start  = 0.0
         self._last_elapsed = None
 
@@ -120,6 +122,7 @@ class Sudoku:
         font_title = pygame.font.SysFont(*FONT_TITLE, bold=True)
         font_mono  = pygame.font.SysFont(*FONT_MONO)
 
+        # --- Grid ---
         for r in range(9):
             for c in range(9):
                 x    = GRID_X + c * CELL
@@ -146,6 +149,7 @@ class Sudoku:
                             (GRID_X + i * CELL * 3, GRID_Y),
                             (GRID_X + i * CELL * 3, GRID_Y + GRID_SIZE), lw)
 
+        # --- Left panel ---
         pygame.draw.rect(screen, PANEL_BG,     PANEL_RECT, border_radius=10)
         pygame.draw.rect(screen, PANEL_BORDER, PANEL_RECT, 1, border_radius=10)
 
@@ -189,8 +193,8 @@ class Sudoku:
         else:
             self.confirm_button = pygame.Rect(0, 0, 0, 0)
 
+        # --- Timer / status ---
         if self.is_solving:
-            # Đang chạy: đếm lên
             elapsed = time.perf_counter() - self._solve_start
             timer_str = f"{elapsed:.2f}s" if elapsed < 60 else f"{int(elapsed//60)}m {elapsed%60:.1f}s"
             t = font_btn.render(timer_str, True, TIMER_COL)
@@ -208,6 +212,7 @@ class Sudoku:
                 s = font_btn.render("Chua giai...", True, STATUS_FAIL_COL)
             screen.blit(s, s.get_rect(centerx=PANEL_W // 2, y=HEIGHT - 44))
 
+        # --- Log panel ---
         log_x    = GRID_X + GRID_SIZE + 20
         log_rect = pygame.Rect(log_x, 8, LOG_W - 12, HEIGHT - 16)
         pygame.draw.rect(screen, LOG_BG,     log_rect, border_radius=10)
@@ -224,9 +229,12 @@ class Sudoku:
         pygame.draw.line(screen, LOG_LINE_COL,
                         (log_x + 6, 34), (log_x + LOG_W - 18, 34), 1)
 
-        max_lines = (HEIGHT - 55) // LOG_LINE_H
-        total     = len(self.log)
+        # vùng hiển thị text trong log (chừa scrollbar dọc 18px bên phải,
+        # scrollbar ngang 10px ở dưới)
         log_text_max_w = LOG_W - 32
+
+        max_lines = (HEIGHT - 55 - 12) // LOG_LINE_H   # -12 để chừa scrollbar ngang
+        total     = len(self.log)
 
         self.log_scroll = max(0, min(self.log_scroll, max(0, total - max_lines)))
 
@@ -234,16 +242,20 @@ class Sudoku:
         end     = total - self.log_scroll if self.log_scroll > 0 else total
         visible = self.log[max(0, start):end]
 
-        for i, entry in enumerate(visible):
-            col  = LOG_TEXT_OK if not entry.startswith("!") else LOG_TEXT_ERR
-            text = entry
-            while font_mono.size(text)[0] > log_text_max_w and len(text) > 0:
-                text = text[:-1]
-            t = font_mono.render(text, True, col)
-            screen.blit(t, (log_x + 10, 42 + i * LOG_LINE_H))
+        # clip region cho text (không tràn sang scrollbar dọc)
+        clip_rect = pygame.Rect(log_x + 10, 42, log_text_max_w, max_lines * LOG_LINE_H)
+        screen.set_clip(clip_rect)
 
+        for i, entry in enumerate(visible):
+            col = LOG_TEXT_OK if not entry.startswith("!") else LOG_TEXT_ERR
+            t   = font_mono.render(entry, True, col)
+            screen.blit(t, (log_x + 10 - self.log_scroll_x, 42 + i * LOG_LINE_H))
+
+        screen.set_clip(None)
+
+        # --- Scrollbar dọc ---
         if total > max_lines:
-            track_h = HEIGHT - 55
+            track_h = max_lines * LOG_LINE_H
             thumb_h = max(20, track_h * max_lines // total)
             thumb_y = 42 + (track_h - thumb_h) * (total - max_lines - self.log_scroll) // max(1, total - max_lines)
             pygame.draw.rect(screen, (60, 65, 70),
@@ -251,6 +263,20 @@ class Sudoku:
             pygame.draw.rect(screen, (120, 130, 120),
                             pygame.Rect(log_x + LOG_W - 18, thumb_y, 6, thumb_h), border_radius=3)
 
+        # --- Scrollbar ngang ---
+        max_text_w = max((font_mono.size(e)[0] for e in self.log), default=0)
+        if max_text_w > log_text_max_w:
+            track_w      = log_text_max_w - 12
+            thumb_w      = max(30, track_w * log_text_max_w // max_text_w)
+            max_scroll_x = max(1, max_text_w - log_text_max_w)
+            scroll_ratio = self.log_scroll_x / max_scroll_x
+            thumb_x      = log_x + 10 + int((track_w - thumb_w) * scroll_ratio)
+            pygame.draw.rect(screen, (60, 65, 70),
+                            pygame.Rect(log_x + 10, HEIGHT - 22, track_w, 6), border_radius=3)
+            pygame.draw.rect(screen, (120, 130, 120),
+                            pygame.Rect(thumb_x, HEIGHT - 22, thumb_w, 6), border_radius=3)
+
+        # --- Resume overlay ---
         if self.is_resume:
             self.resume.draw(screen)
 
@@ -269,10 +295,18 @@ class Sudoku:
             self.is_resume = True
 
         if event.type == pygame.MOUSEWHEEL:
-            log_x = GRID_X + GRID_SIZE + 20
+            log_x    = GRID_X + GRID_SIZE + 20
             log_rect = pygame.Rect(log_x, 8, LOG_W - 12, HEIGHT - 16)
             if log_rect.collidepoint(pygame.mouse.get_pos()):
-                self.log_scroll = max(0, self.log_scroll + event.y)
+                if event.x != 0:
+                    # cuộn ngang (trackpad hoặc Shift+scroll)
+                    font_mono    = pygame.font.SysFont(*FONT_MONO)
+                    max_text_w   = max((font_mono.size(e)[0] for e in self.log), default=0)
+                    max_scroll_x = max(0, max_text_w - (LOG_W - 32))
+                    self.log_scroll_x = max(0, min(self.log_scroll_x - event.x * 8, max_scroll_x))
+                else:
+                    # cuộn dọc
+                    self.log_scroll = max(0, self.log_scroll + event.y)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.resume_button.collidepoint(event.pos):
