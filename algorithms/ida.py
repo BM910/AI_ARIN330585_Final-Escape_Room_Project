@@ -23,50 +23,36 @@ def ida_star(start_map, energy=float("inf")):
 
     while threshold < 100000:
         min_threshold = float('inf')
-        visited = {root.state.get_tuple_no_energy()}
         stack = [root]
 
         while stack:
-            node = stack[-1]
+            node = stack.pop()
 
             if node.state.is_at_goal():
                 return get_result_path(node)
 
-            next_action = None
-            next_state_to_expand = None
             for action in node.state.get_moves():
                 next_state = generate_new_state(node.state, action)
                 if next_state is None:
                     continue
-                if next_state.get_tuple_no_energy() not in visited:
-                    next_action = action
-                    next_state_to_expand = next_state
-                    break
 
-            # Hết action -> backtrack
-            if next_action is None:
-                stack.pop()
-                visited.discard(node.state.get_tuple_no_energy())
-                continue
+                g_new = node.cost['g_n'] + (
+                    (node.state.energy - next_state.energy)
+                    if node.state.energy > next_state.energy else 0
+                )
+                h_new = calculate_heuristic(next_state)
+                f_new = g_new + h_new
 
-            g_new = node.cost['g_n'] + (
-                (node.state.energy - next_state_to_expand.energy)
-                if node.state.energy > next_state_to_expand.energy else 0
-            )
-            h_new = calculate_heuristic(next_state_to_expand)
-            f_new = g_new + h_new
+                if f_new > threshold:
+                    if f_new < min_threshold:
+                        min_threshold = f_new
+                    continue
 
-            if f_new > threshold:
-                if f_new < min_threshold:
-                    min_threshold = f_new
-                continue
+                child_node = Node(next_state, node, action, {
+                    'g_n': g_new, 'h_n': h_new, 'f_n': f_new
+                })
 
-            child_node = Node(next_state_to_expand, node, next_action, {
-                'g_n': g_new, 'h_n': h_new, 'f_n': f_new
-            })
-
-            visited.add(next_state_to_expand.get_tuple_no_energy())
-            stack.append(child_node)
+                stack.append(child_node)
 
         if min_threshold == float('inf'):
             return None
