@@ -1,6 +1,7 @@
 from data.Node import Node
 from data.State import generate_new_state
 
+
 def and_or_search(start_state):
     node = Node(start_state, parent=None, action=None, cost=0)
     return or_search(node.state, [])

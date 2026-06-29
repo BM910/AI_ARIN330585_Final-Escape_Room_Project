@@ -6,4 +6,3 @@ class Node:
         self.parent = parent
         self.action = action
         self.cost = cost
-

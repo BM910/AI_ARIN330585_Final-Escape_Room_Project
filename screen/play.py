@@ -6,7 +6,7 @@ from screen.success import SuccessScreen
 from screen.failure import FailureScreen
 from screen.sudoku import Sudoku
 from screen.connect_4 import ConnectFour
-from screen.level_1_agent_mode import AIReplayScreen
+from screen.levels_agent_mode import AIReplayScreen
 from screen.sensorless_screen import SensorlessReplayScreen
 from screen.draw_helpers import draw_cell, draw_robot, draw_key_bar
 
@@ -270,7 +270,7 @@ class PlayScreen:
                 draw_cell(screen, rect, game_map[r][c])
                 pygame.draw.rect(screen, (0, 0, 0), rect, 1)
 
-        # Robot (player)
+        # Robot
         if self.level != 5:
             pr = (self.offset_x + self.node.state.y * CELL_SIZE,
                   self.offset_y + self.node.state.x * CELL_SIZE,
@@ -296,7 +296,7 @@ class PlayScreen:
             agent_text = font_agent.render("Agent Mode", True, (255, 255, 255))
             screen.blit(agent_text, agent_text.get_rect(center=self.agent_button.center))
 
-        # Info bar — Energy text + icon chìa khóa
+        # Info bar
         font_info   = pygame.font.SysFont(None, 28)
         energy_surf = font_info.render(
             f"Energy: {self.node.state.energy}    Keys: ",

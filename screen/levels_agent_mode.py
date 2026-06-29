@@ -16,6 +16,7 @@ from algorithms.local_beam import local_beam_search
 from algorithms.simulated_annealing import simulated_annealing
 from algorithms.partial_observation import partial_observation
 
+
 WIDTH, HEIGHT = 1280, 760
 CELL          = 56
 

@@ -194,11 +194,9 @@ def draw_key_bar(surf, keys, x, y, size=28):
         col = KEY_COLORS.get(ch.lower(), (255, 215, 0))
         cx, cy = x + size//2, y + size//2
 
-        # Nền tròn
         pygame.draw.circle(surf, (40, 40, 50), (cx, cy), size//2)
         pygame.draw.circle(surf, col,           (cx, cy), size//2, 2)
 
-        # Hình chìa khóa thu nhỏ
         r  = max(3, size // 7)
         lw = max(1, size // 14)
         pygame.draw.circle(surf, col, (cx - r, cy - r), r, lw)
@@ -212,7 +210,6 @@ def draw_key_bar(surf, keys, x, y, size=28):
                          (cx + r*2, cy + r*2),
                          (cx + r*3, cy + r),  lw + 1)
 
-        # Chữ cái nhỏ ở góc dưới trái
         f = pygame.font.SysFont("courier", max(8, size // 3), bold=True)
         t = f.render(ch.upper(), True, col)
         surf.blit(t, (x + 2, y + size - size//3 - 2))

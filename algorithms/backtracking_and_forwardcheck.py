@@ -1,4 +1,5 @@
-from collections import deque
+import time
+
 
 def get_csp(matrix):
     vars = []
@@ -78,7 +79,6 @@ def backtrack(vars, domain, assignment, step_count, matrix, log=None):
         if log is not None:
             log.append(f"  Đặt ({r},{c})={value} [b{step_count[0]}]")
 
-        import time
         time.sleep(0.01)
 
         pruned = forward_check(var, value, vars, domain, assignment, log)
@@ -89,7 +89,7 @@ def backtrack(vars, domain, assignment, step_count, matrix, log=None):
                 return result
 
         if log is not None:
-            log.append(f"  lui ({r},{c})={value}")
+            log.append(f"  lùi ({r},{c})={value}")
 
         restore(pruned or {}, domain)
         matrix[r][c] = 0

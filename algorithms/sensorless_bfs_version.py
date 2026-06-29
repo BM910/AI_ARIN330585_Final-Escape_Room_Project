@@ -41,7 +41,7 @@ def sensorless_bfs_version(start_map, energy=float("inf")):
     if not start_map:
         return None
     
-    # Khởi tạo Node
+    # Sinh ra Belief state và khởi tạo Node
     node = Node(generate_belief_states(start_map), parent=None, action=None, cost=0)
     if is_goal_state_set(node.state):
         return get_result_path(node)

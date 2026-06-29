@@ -6,6 +6,7 @@ import time
 
 from algorithms.sensorless_bfs_version import sensorless_bfs_version
 
+
 WIDTH, HEIGHT = 1280, 760
 CELL          = 56
 

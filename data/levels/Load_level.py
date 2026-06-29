@@ -14,7 +14,7 @@ def load_level(path: str) -> tuple[int, Node]:
         x=s["x"],
         y=s["y"],
         energy=s["energy"],
-        keys=set(s["keys"]),   # JSON lưu list, State dùng set
+        keys=set(s["keys"]), 
     )
 
     node = Node(state=state, parent=None, action=None, cost=0)

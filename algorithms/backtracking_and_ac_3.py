@@ -1,5 +1,6 @@
 from collections import deque
 
+
 def get_csp(matrix):
     vars = []
     val_in_rows = [set() for _ in range(9)]
@@ -139,12 +140,12 @@ def backtrack(vars, domain, assignment, matrix, log=None):
 
 def backtracking_and_ac_3_search(matrix, log=None):
     if log is not None:
-        log.append("AC3 bat dau...")
+        log.append("AC3 bắt đầu...")
 
     ac3_result = ac_3(matrix, log)
     if ac3_result is None:
         if log is not None:
-            log.append("! AC3 thất bại")
+            log.append("  AC3 thất bại")
         return None
         
     vars, domain = ac3_result

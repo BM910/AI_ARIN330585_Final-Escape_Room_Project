@@ -8,6 +8,7 @@ from algorithms.minimax_search import minimax_search
 from algorithms.alpha_beta_search import alpha_beta_search
 from algorithms.expectimax import expectimax
 
+
 # helper
 def get_valid_cols(board):
     return [c for c in range(len(board[0])) if board[0][c] == 0]
@@ -99,7 +100,7 @@ class ConnectFour:
     def __init__(self, screen_w=1000, screen_h=600, offset_x=None, offset_y=None):
         self.screen_w = screen_w
         self.screen_h = screen_h
-        # Căn giữa nếu không truyền offset
+
         self.ox = offset_x if offset_x is not None else (screen_w - TOTAL_W) // 2
         self.oy = offset_y if offset_y is not None else (screen_h - TOTAL_H) // 2
 
@@ -110,7 +111,7 @@ class ConnectFour:
         self.algorithms = list(ALGO_MAP.keys())
         self.algo_idx   = 0
 
-        lx = self.ox + BOARD_W       # x bắt đầu log panel
+        lx = self.ox + BOARD_W    
         PAD, BTN_H = 10, 28
 
         total_algo_w = LOG_W - PAD * 2
@@ -221,7 +222,6 @@ class ConnectFour:
         if self.show_info:
             self._draw_info_dialog(sf)
 
-        # Dán surface lên screen tại offset
         screen.blit(sf, (self.ox, self.oy))
 
     def _draw_header(self, sf):
@@ -252,14 +252,14 @@ class ConnectFour:
         pygame.draw.rect(sf, C_LOG_BG,    (lx, 0, LOG_W, TOTAL_H))
         pygame.draw.line(sf, C_LOG_BORDER, (lx, 0), (lx, TOTAL_H), 1)
         mouse_abs = pygame.mouse.get_pos()
-        # chuyển về tọa độ nội bộ
+
         mouse = (mouse_abs[0] - self.ox, mouse_abs[1] - self.oy)
 
         PAD, BTN_H = 10, 28
         total_algo_w = LOG_W - PAD * 2
         algo_btn_w   = (total_algo_w - PAD * 2) // 3
 
-        # 3 nút thuật toán (tọa độ nội bộ)
+        # 3 nút thuật toán
         for i, name in enumerate(self.algorithms):
             rx   = lx + PAD + i * (algo_btn_w + PAD)
             rect = pygame.Rect(rx, PAD, algo_btn_w, BTN_H)
@@ -420,7 +420,7 @@ class ConnectFour:
             col = valid[0] if valid else None
         if col is None: return
         move_num = sum(c != 0 for row in self.board for c in row) + 1
-        self._add_log(f"#{move_num} Agent → cột {col+1}", C_P1)
+        self._add_log(f"#{move_num} Agent -> cột {col+1}", C_P1)
         self._add_log(f"  [{algo_name}] score={score:.2f} | {elapsed:.3f}s", C_AI_TIME)
         self._start_drop(col, 1)
 

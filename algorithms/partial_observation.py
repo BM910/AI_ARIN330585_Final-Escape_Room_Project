@@ -2,13 +2,10 @@ from algorithms.helper import Node, State, generate_new_state, find_start_positi
 
 # Giải thích:
 # - Quan sát cục bộ 3x3
-# - Không có ô năng lượng
-# - Có chìa khóa và cửa
 # - Những ô chưa từng thấy hiển thị là '?'
 # - Belief map khởi đầu toàn '?' trừ vị trí S và E
 
 UNKNOWN = '?'
-
 
 def get_observation_3x3(actual_map, x, y):
     """Trả về tất cả ô trong vùng 3x3 xung quanh agent (bán kính 1 theo mọi hướng)."""
@@ -88,43 +85,3 @@ def partial_observation(actual_map, start_energy=None):
         path.append(current_node)
 
     return path
-
-
-# test
-if __name__ == "__main__":
-    def print_state(state : State):
-        for i, row in enumerate(state.map):
-            for j, tile in enumerate(row):
-                if i == state.x and j == state.y:
-                    print("*", end=" ")
-                elif tile == "." or tile == "S":
-                    print(" ", end=" ")
-                else:
-                    print(tile, end=" ")
-            print()
-        print()
-
-    test_map = [
-            ['a', '.', '.', '.', '.'],
-            ['A', '#', '.', '.', '.'],
-            ['.', '.', '.', '.', '.'],
-            ['.', 'S', 'b', '.', '.'],
-            ['.', '.', '.', '.', '.'],
-            ['#', 'A', '#', '#', '#'],
-            ['#', 'B', '#', '.', '.'],
-            ['#', 'E', '#', '.', '.'],
-            ['#', '#', '#', '.', '.']
-    ]
-
-    node_list = partial_observation(test_map)
-    action_list = []
-    if node_list:
-        for node in node_list:
-            action_list.append(node.action)
-            print_state(node.state)
-            print(f"action: {node.action}  cost: {node.cost}  energy: {node.state.energy}")
-            print("-"*20)
-        for action in action_list:
-            print(action, end=" ")
-    else:
-        print(node_list)
