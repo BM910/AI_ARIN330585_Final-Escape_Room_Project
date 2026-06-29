@@ -214,6 +214,7 @@ Các thuật toán này được áp dụng để giải Thử thách **Connect-
 </div>
 
 - **Level 8:** Tìm kiếm đối kháng (Adversarial search) - Trò chơi Connect-4
+
 <div align="center">
   <img src="assets/level_8.gif" alt="Level 8 Picture" width="700"/>
 </div>
